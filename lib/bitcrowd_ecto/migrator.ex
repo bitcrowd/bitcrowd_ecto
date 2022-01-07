@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 defmodule BitcrowdEcto.Migrator do
   @moduledoc """
   Release migration logic for repositories.
@@ -57,33 +59,62 @@ defmodule BitcrowdEcto.Migrator do
           MyApp.Repo.up()
         end
       end
+
+      defmodule Mix.Tasks.MyApp.Rollback do
+        use Mix.Task
+
+        @shortdoc "Rolls back our repository"
+        @moduledoc "Rolls back the repository including the tenant schemas"
+
+        @impl true
+        def run(args) do
+          Mix.Task.run("app.config", args)
+
+          {[to: to], _} = OptionParser.parse!(args, strict: [to: :integer], aliases: [])
+
+          MyApp.Repo.down(to)
+        end
+      end
   """
+
+  @moduledoc since: "0.1.0"
 
   require Logger
   alias Ecto.Adapters.SQL
   alias Ecto.Migrator
 
+  @doc """
+  Returns the list of prefixes used on this repository.
+  """
+  @doc since: "0.1.0"
+  @callback known_prefixes :: [String.t()]
+
+  @doc """
+  Migrates both the "main" (i.e. non-tenant) schemas/tables and the tenant schemas to their
+  latest version.
+  """
+  @doc since: "0.1.0"
+  @callback up() :: :ok
+
+  @doc """
+  Rolls back both the main schemas/tables and the tenant schemas to a given version.
+  """
+  @doc since: "0.1.0"
+  @callback down(to :: non_neg_integer()) :: :ok
+
   defmacro __using__(_) do
     quote do
-      @doc """
-      Returns the list of prefixes used on this repository.
-      """
-      @spec known_prefixes :: [String.t()]
+      @behaviour BitcrowdEcto.Migrator
+
+      @impl BitcrowdEcto.Migrator
       def known_prefixes, do: []
 
-      @doc """
-      Migrates both the "main" (i.e. non-tenant) schemas/tables and the tenant schemas to their
-      latest version.
-      """
-      @spec up() :: :ok
+      @impl BitcrowdEcto.Migrator
       def up do
         BitcrowdEcto.Migrator.up(__MODULE__)
       end
 
-      @doc """
-      Rolls back both the main schemas/tables and the tenant schemas to a given version.
-      """
-      @spec down(to :: non_neg_integer()) :: :ok
+      @impl BitcrowdEcto.Migrator
       def down(to) when is_integer(to) do
         BitcrowdEcto.Migrator.down(__MODULE__, to)
       end

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 defmodule BitcrowdEcto.Assertions do
   @moduledoc """
   Useful little test assertions related to `t:Ecto.Changeset.t/0`.
@@ -20,6 +22,8 @@ defmodule BitcrowdEcto.Assertions do
       end
   """
 
+  @moduledoc since: "0.1.0"
+
   import ExUnit.Assertions
 
   @doc """
@@ -34,6 +38,7 @@ defmodule BitcrowdEcto.Assertions do
   as those are were Ecto stores its metadata. Custom metadata at different keys can be extracted
   using the `:metadata` option.
   """
+  @doc since: "0.1.0"
   @spec flat_errors_on(Ecto.Changeset.t(), atom) :: [String.t() | atom]
   @spec flat_errors_on(Ecto.Changeset.t(), atom, [{:metadata, atom}]) :: [String.t() | atom]
   def flat_errors_on(changeset, field, opts \\ []) do
@@ -64,6 +69,7 @@ defmodule BitcrowdEcto.Assertions do
 
   Returns the changeset for chainability.
   """
+  @doc since: "0.1.0"
   @spec assert_error_on(Ecto.Changeset.t(), atom, atom | [atom]) :: Ecto.Changeset.t() | no_return
   @spec assert_error_on(Ecto.Changeset.t(), atom, atom | [atom], [{:metadata, atom}]) ::
           Ecto.Changeset.t() | no_return
@@ -89,6 +95,7 @@ defmodule BitcrowdEcto.Assertions do
 
     Returns the changeset for chainability.
     """
+    @doc since: "0.1.0"
     @spec unquote(:"assert_#{validation}_error_on")(Ecto.Changeset.t(), atom) ::
             Ecto.Changeset.t() | no_return
     def unquote(:"assert_#{validation}_error_on")(changeset, field) do
@@ -102,6 +109,7 @@ defmodule BitcrowdEcto.Assertions do
 
     Returns the changeset for chainability.
     """
+    @doc since: "0.1.0"
     @spec unquote(:"assert_#{constraint}_constraint_error_on")(Ecto.Changeset.t(), atom) ::
             Ecto.Changeset.t() | no_return
     def unquote(:"assert_#{constraint}_constraint_error_on")(changeset, field) do
@@ -114,6 +122,7 @@ defmodule BitcrowdEcto.Assertions do
 
   Returns the changeset for chainability.
   """
+  @doc since: "0.1.0"
   @spec refute_errors_on(Ecto.Changeset.t(), atom) :: Ecto.Changeset.t() | no_return
   def refute_errors_on(changeset, field) do
     assert flat_errors_on(changeset, field) == []
@@ -126,6 +135,7 @@ defmodule BitcrowdEcto.Assertions do
 
   Returns the changeset for chainability.
   """
+  @doc since: "0.1.0"
   @spec assert_changes(Ecto.Changeset.t(), atom) :: Ecto.Changeset.t() | no_return
   def assert_changes(changeset, field) do
     assert Map.has_key?(changeset.changes, field)
@@ -138,6 +148,7 @@ defmodule BitcrowdEcto.Assertions do
 
   Returns the changeset for chainability.
   """
+  @doc since: "0.1.0"
   @spec assert_changes(Ecto.Changeset.t(), atom, any) :: Ecto.Changeset.t() | no_return
   def assert_changes(changeset, field, value) do
     assert Map.get(changeset.changes, field) == value
@@ -150,6 +161,7 @@ defmodule BitcrowdEcto.Assertions do
 
   Returns the changeset for chainability.
   """
+  @doc since: "0.1.0"
   @spec refute_changes(Ecto.Changeset.t(), atom) :: Ecto.Changeset.t() | no_return
   def refute_changes(changeset, field) do
     refute Map.has_key?(changeset.changes, field)
@@ -166,6 +178,7 @@ defmodule BitcrowdEcto.Assertions do
         %Foo{} |> Repo.insert()
       end
   """
+  @doc since: "0.1.0"
   @spec assert_difference((() -> float | integer), float | integer, (() -> any)) ::
           Ecto.Changeset.t() | no_return
   @spec assert_difference((() -> float | integer), float | integer, (() -> any), [
@@ -198,6 +211,7 @@ defmodule BitcrowdEcto.Assertions do
         Repo.insert(%Foo{})
       end
   """
+  @doc since: "0.1.0"
   @spec refute_difference((() -> any), (() -> any)) :: Ecto.Changeset.t() | no_return
   @spec refute_difference((() -> any), (() -> any), [{:message, String.t()}]) ::
           Ecto.Changeset.t() | no_return
@@ -228,6 +242,7 @@ defmodule BitcrowdEcto.Assertions do
         Repo.insert(%Foo{})
       end
   """
+  @doc since: "0.1.0"
   @spec assert_count_difference(Ecto.Repo.t(), module, integer, (() -> any)) ::
           Ecto.Changeset.t() | no_return
   def assert_count_difference(repo, schema, by, how) do
@@ -248,6 +263,7 @@ defmodule BitcrowdEcto.Assertions do
         %MyApp.Bar{id: 1} |> MyApp.Repo.delete()
       end
   """
+  @doc since: "0.1.0"
   @spec assert_count_differences(Ecto.Repo.t(), [{module, integer}], (() -> any)) ::
           Ecto.Changeset.t() | no_return
   def assert_count_differences(_repo, [], how), do: how.()
@@ -261,7 +277,9 @@ defmodule BitcrowdEcto.Assertions do
   @doc """
   Asserts that an Ecto struct has a preloaded nested struct at a given path.
   """
-  @spec assert_preloaded(Ecto.Schema.t(), atom | [atom]) :: boolean | no_return
+  @doc since: "0.1.0"
+  @spec assert_preloaded(schema :: Ecto.Schema.t(), fields :: atom | [atom]) ::
+          boolean | no_return
   def assert_preloaded(record, [x]), do: assert_preloaded(record, x)
   def assert_preloaded(record, [x | xs]), do: assert_preloaded(Map.get(record, x), xs)
 
@@ -277,7 +295,9 @@ defmodule BitcrowdEcto.Assertions do
   @doc """
   Refutes that an Ecto struct has a preloaded nested struct at a given path.
   """
-  @spec refute_preloaded(Ecto.Schema.t(), atom | [atom]) :: boolean | no_return
+  @doc since: "0.1.0"
+  @spec refute_preloaded(schema :: Ecto.Schema.t(), fields :: atom | [atom]) ::
+          boolean | no_return
   def refute_preloaded(record, [x]), do: refute_preloaded(record, x)
   def refute_preloaded(record, [x | xs]), do: refute_preloaded(Map.get(record, x), xs)
 

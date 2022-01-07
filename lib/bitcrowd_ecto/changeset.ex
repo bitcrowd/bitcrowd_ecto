@@ -1,7 +1,11 @@
+# SPDX-License-Identifier: Apache-2.0
+
 defmodule BitcrowdEcto.Changeset do
   @moduledoc """
   Extensions for Ecto changesets.
   """
+
+  @moduledoc since: "0.1.0"
 
   import Ecto.Changeset
 
@@ -16,6 +20,7 @@ defmodule BitcrowdEcto.Changeset do
   changed to `"bar"` or `"yolo"`. If the field is not changed, a `{state, state}` transition
   has to be present in the list of transitions.
   """
+  @doc since: "0.1.0"
   @spec validate_transition(Ecto.Changeset.t(), atom, [{any, any}]) :: Ecto.Changeset.t()
   def validate_transition(changeset, field, transitions) do
     from = Map.fetch!(changeset.data, field)
@@ -39,6 +44,7 @@ defmodule BitcrowdEcto.Changeset do
   @doc """
   Validates that a field that has been changed.
   """
+  @doc since: "0.1.0"
   @spec validate_changed(Ecto.Changeset.t(), atom) :: Ecto.Changeset.t()
   def validate_changed(changeset, field) do
     if Map.has_key?(changeset.changes, field) do
@@ -51,6 +57,7 @@ defmodule BitcrowdEcto.Changeset do
   @doc """
   Validates that a field is not changed from its current value, unless the current value is nil.
   """
+  @doc since: "0.1.0"
   @spec validate_immutable(Ecto.Changeset.t(), atom) :: Ecto.Changeset.t()
   def validate_immutable(changeset, field) do
     if is_nil(Map.fetch!(changeset.data, field)) || !Map.has_key?(changeset.changes, field) do
@@ -74,6 +81,7 @@ defmodule BitcrowdEcto.Changeset do
   The regex used in this validator doesn't understand half of the inputs, but we don't really care
   for now. Validating super strange emails is not a sport we want to compete in.
   """
+  @doc since: "0.1.0"
   @spec validate_email(Ecto.Changeset.t(), atom, [{:max_length, non_neg_integer}]) ::
           Ecto.Changeset.t()
   def validate_email(changeset, field, opts \\ []) do
@@ -87,6 +95,7 @@ defmodule BitcrowdEcto.Changeset do
   @doc """
   Validates a field url to be qualified url
   """
+  @doc since: "0.1.0"
   @spec validate_url(Ecto.Changeset.t(), atom) :: Ecto.Changeset.t()
   def validate_url(changeset, field) do
     get_field(changeset, field) |> do_validate_url(changeset, field)

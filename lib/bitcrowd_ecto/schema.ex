@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 defmodule BitcrowdEcto.Schema do
   @moduledoc """
   An opinionated set of defaults for Ecto schemas.
@@ -21,6 +23,8 @@ defmodule BitcrowdEcto.Schema do
         use BitcrowdEcto.Schema, prefix: "foo"
       end
   """
+
+  @moduledoc since: "0.1.0"
 
   defmacro __using__(opts) do
     schema_prefix =
