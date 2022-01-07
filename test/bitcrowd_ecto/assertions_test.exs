@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 defmodule BitcrowdEcto.AssertionsTest do
   use BitcrowdEcto.TestCase, async: true
   import BitcrowdEcto.Assertions
