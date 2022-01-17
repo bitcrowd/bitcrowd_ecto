@@ -2,6 +2,7 @@ defmodule BitcrowdEcto.DateTime do
   @moduledoc """
   Functions to work with date and time values.
   """
+  @moduledoc since: "0.2.0"
 
   @type value :: integer()
   @type unit :: :second | :minute | :hour | :day | :week
@@ -11,21 +12,22 @@ defmodule BitcrowdEcto.DateTime do
 
   #Examples
 
-    iex> BitcrowdEcto.DateTime.in_seconds({99, :second})
-    99
+      iex> BitcrowdEcto.DateTime.in_seconds({99, :second})
+      99
 
-    iex> BitcrowdEcto.DateTime.in_seconds({1, :minute})
-    60
+      iex> BitcrowdEcto.DateTime.in_seconds({1, :minute})
+      60
 
-    iex> BitcrowdEcto.DateTime.in_seconds({1, :hour})
-    3600
+      iex> BitcrowdEcto.DateTime.in_seconds({1, :hour})
+      3600
 
-    iex> BitcrowdEcto.DateTime.in_seconds({1, :day})
-    86400
+      iex> BitcrowdEcto.DateTime.in_seconds({1, :day})
+      86400
 
-    iex> BitcrowdEcto.DateTime.in_seconds({1, :week})
-    604800
+      iex> BitcrowdEcto.DateTime.in_seconds({1, :week})
+      604800
   """
+  @doc since: "0.2.0"
   @spec in_seconds({value(), unit()}) :: value()
   def in_seconds({seconds, :second}), do: seconds
   def in_seconds({minutes, :minute}), do: 60 * minutes
