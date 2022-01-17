@@ -4,6 +4,8 @@ defmodule BitcrowdEcto.AssertionsTest do
   use BitcrowdEcto.TestCase, async: true
   import BitcrowdEcto.Assertions
 
+  doctest BitcrowdEcto.Assertions, import: true
+
   describe "flat_errors_on/2" do
     test "flattens all errors and their validation metadata into a list" do
       cs =

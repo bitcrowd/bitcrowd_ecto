@@ -346,4 +346,8 @@ defmodule BitcrowdEcto.Assertions do
   def assert_sorted_equal(a, b) when is_list(a) and is_list(b) do
     assert(Enum.sort(a) == Enum.sort(b))
   end
+
+  def assert_sorted_equal(a, b, accessor) do
+    assert_sorted_equal(Enum.map(a, accessor), Enum.map(b, accessor))
+  end
 end
