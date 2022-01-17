@@ -1,5 +1,9 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
+## [0.3.0] - 2022-01-17
+
+Add `assert_almost_now/1`, `assert_almost_coincide/3` and `assert_sorted_equal/2` to `BitcrowdEcto.Assertions`.
+
 ## [0.2.0] - 2022-01-17
 
 Add `BitcrowdEcto.DateTime.in_seconds/1`.
