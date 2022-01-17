@@ -312,4 +312,38 @@ defmodule BitcrowdEcto.Assertions do
 
   defp not_loaded_ecto_association?(%Ecto.Association.NotLoaded{}), do: true
   defp not_loaded_ecto_association?(_), do: false
+
+  @doc """
+  Allows to compare a DateTime field to another, testing whether they are roughly equal (d=5s).
+  Delta defaults to 5 seconds and can be passed in optionally.
+  """
+  @doc since: "0.3.0"
+  def assert_almost_coincide(%DateTime{} = a, %DateTime{} = b, delta \\ 5) do
+    assert_in_delta DateTime.to_unix(a), DateTime.to_unix(b), delta
+  end
+
+  @doc """
+  Allows to compare a DateTime field to the present time.
+  """
+  @doc since: "0.3.0"
+  def assert_almost_now(timestamp) do
+    assert_almost_coincide(timestamp, DateTime.utc_now())
+  end
+
+  @doc """
+  Assert that two lists are equal when sorted (Enum.sort).
+
+  ## Example
+
+      assert_sorted_equal [:"1", :"2"], [:"2", :"1"]
+      assert_sorted_equal(
+        [%{id: 2}, %{id: 1}],
+        [%{id: 1, preload_nested_resource: %{id: 5}}, %{id: 2}],
+        & &1.id
+      )
+  """
+  @doc since: "0.3.0"
+  def assert_sorted_equal(a, b) when is_list(a) and is_list(b) do
+    assert(Enum.sort(a) == Enum.sort(b))
+  end
 end
