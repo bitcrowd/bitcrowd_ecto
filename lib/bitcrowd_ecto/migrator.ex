@@ -102,12 +102,21 @@ defmodule BitcrowdEcto.Migrator do
   @doc since: "0.1.0"
   @callback down(to :: non_neg_integer()) :: :ok
 
+  @doc """
+  Called when the migrator experiences an exception.
+  """
+  @doc since: "0.4.0"
+  @callback handle_migrator_exception(Exception.t(), Exception.stacktrace()) :: any()
+
   defmacro __using__(_) do
     quote do
       @behaviour BitcrowdEcto.Migrator
 
       @impl BitcrowdEcto.Migrator
       def known_prefixes, do: []
+
+      @impl BitcrowdEcto.Migrator
+      def handle_migrator_exception(_exception, _stacktrace), do: :ok
 
       @impl BitcrowdEcto.Migrator
       def up do
@@ -119,7 +128,7 @@ defmodule BitcrowdEcto.Migrator do
         BitcrowdEcto.Migrator.down(__MODULE__, to)
       end
 
-      defoverridable known_prefixes: 0
+      defoverridable known_prefixes: 0, handle_migrator_exception: 2
     end
   end
 
@@ -128,7 +137,7 @@ defmodule BitcrowdEcto.Migrator do
   def up(repo) do
     boot(repo)
 
-    retry_when_no_connection(fn ->
+    handle_exceptions(repo, fn ->
       {:ok, _, _} =
         Migrator.with_repo(repo, fn repo ->
           Migrator.run(repo, :up, all: true)
@@ -148,14 +157,16 @@ defmodule BitcrowdEcto.Migrator do
   def down(repo, to) when is_integer(to) do
     boot(repo)
 
-    {:ok, _, _} =
-      Migrator.with_repo(repo, fn repo ->
-        for tenant <- repo.known_prefixes() do
-          Migrator.run(repo, tenant_migrations_path(repo), :down, prefix: tenant, to: to)
-        end
+    handle_exceptions(repo, fn ->
+      {:ok, _, _} =
+        Migrator.with_repo(repo, fn repo ->
+          for tenant <- repo.known_prefixes() do
+            Migrator.run(repo, tenant_migrations_path(repo), :down, prefix: tenant, to: to)
+          end
 
-        Migrator.run(repo, :down, to: to)
-      end)
+          Migrator.run(repo, :down, to: to)
+        end)
+    end)
 
     :ok
   end
@@ -165,6 +176,14 @@ defmodule BitcrowdEcto.Migrator do
       repo.config()
       |> Keyword.fetch!(:otp_app)
       |> Application.ensure_loaded()
+  end
+
+  defp handle_exceptions(repo, callback) do
+    retry_when_no_connection(callback)
+  rescue
+    exception ->
+      repo.handle_migrator_exception(exception, __STACKTRACE__)
+      reraise exception, __STACKTRACE__
   end
 
   defp retry_when_no_connection(n \\ 5, callback)
