@@ -1,5 +1,11 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
+## [0.5.0] - 2022-02-04
+
+### Added
+
+* Add `Migrator.ensure_up!/0` to check whether all migrations are up.
+
 ## [0.4.0] - 2022-01-28
 
 ### Added
