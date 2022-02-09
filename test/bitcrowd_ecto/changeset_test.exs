@@ -344,6 +344,20 @@ defmodule BitcrowdEcto.ChangesetTest do
                :until
              )
     end
+
+    test "with a custom formatter", %{today: today} do
+      formatter = fn date -> Date.to_iso8601(date, :basic) end
+
+      cs =
+        %TestSchema{from: today}
+        |> Ecto.Changeset.cast(%{until: today |> Date.add(-1)}, [:until])
+        |> validate_date_order(:from, :until, [:lt, :eq], formatter)
+
+      assert flat_errors_on(cs, :until) == [
+               "must be after '#{Date.to_iso8601(today, :basic)}'",
+               :date_order
+             ]
+    end
   end
 
   describe "validate_datetime_order/3" do
@@ -402,14 +416,13 @@ defmodule BitcrowdEcto.ChangesetTest do
     end
 
     test "with a custom formatter" do
-      formatter = fn datetime, _timezone -> DateTime.to_date(datetime) end
       from = ~U[2020-01-01 01:00:00Z]
       until = ~U[2020-01-01 00:00:00Z]
 
       cs =
         %TestSchema{}
         |> Ecto.Changeset.cast(%{from_dt: from, until_dt: until}, [:from_dt, :until_dt])
-        |> validate_datetime_order(:from_dt, :until_dt, [:lt, :eq], formatter)
+        |> validate_datetime_order(:from_dt, :until_dt, [:lt, :eq], &DateTime.to_date/1)
 
       assert flat_errors_on(cs, :until_dt) == [
                "must be after '#{DateTime.to_date(from)}'",
@@ -436,10 +449,10 @@ defmodule BitcrowdEcto.ChangesetTest do
     end
 
     test "adds an error to the :to_number field in the changeset when the order is invalid" do
-      assert :numbers_order_consistency in flat_errors_on(
+      assert flat_errors_on(
                number_order_changeset(10, 9),
                :to_number
-             )
+             ) == ["must be after '10'", :numbers_order_consistency]
     end
   end
 end

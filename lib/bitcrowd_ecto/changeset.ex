@@ -174,14 +174,21 @@ defmodule BitcrowdEcto.Changeset do
   """
   @doc since: "0.6.0"
   @spec validate_date_order(Ecto.Changeset.t(), atom, atom, list(atom)) :: Ecto.Changeset.t()
-  def validate_date_order(changeset, from_field, until_field, valid_orders \\ [:lt, :eq]) do
+  def validate_date_order(
+        changeset,
+        from_field,
+        until_field,
+        valid_orders \\ [:lt, :eq],
+        formatter \\ &Date.to_string/1
+      ) do
     validate_order(
       changeset,
       from_field,
       until_field,
       :date_order,
       &Date.compare/2,
-      valid_orders
+      valid_orders,
+      formatter
     )
   end
 
@@ -197,7 +204,7 @@ defmodule BitcrowdEcto.Changeset do
         from_field,
         until_field,
         valid_orders \\ [:lt, :eq],
-        formatter \\ &to_local_datetime/2
+        formatter \\ &DateTime.to_string/1
       ) do
     validate_order(
       changeset,
@@ -210,6 +217,10 @@ defmodule BitcrowdEcto.Changeset do
     )
   end
 
+  @doc """
+  Validates two fields to be a range, so if both are set the first has to be before
+  the second field. The error is placed on the second field.
+  """
   @doc since: "0.6.0"
   @spec validate_order(Ecto.Changeset.t(), atom, atom, atom, fun, list(atom), fun) ::
           Ecto.Changeset.t()
@@ -220,29 +231,18 @@ defmodule BitcrowdEcto.Changeset do
         validation_key,
         compare_fun \\ &Kernel.</2,
         valid_orders \\ [true],
-        formatter \\ &to_local_datetime/2
+        formatter \\ &Kernel.to_string/1
       ) do
     from = get_field(changeset, from_field)
     until = get_field(changeset, until_field)
 
     if from && until && !(compare_fun.(from, until) in List.wrap(valid_orders)) do
-      stringified_value =
-        case from do
-          %DateTime{} ->
-            formatter.(from, from.time_zone)
-
-          _ ->
-            to_string(from)
-        end
+      stringified_value = formatter.(from)
 
       message = "must be after '#{stringified_value}'"
       add_error(changeset, until_field, message, validation: validation_key)
     else
       changeset
     end
-  end
-
-  defp to_local_datetime(datetime, timezone) do
-    datetime |> DateTime.shift_zone!(timezone) |> DateTime.to_string()
   end
 end
