@@ -289,7 +289,7 @@ defmodule BitcrowdEcto.ChangesetTest do
       cs =
         %TestSchema{}
         |> Ecto.Changeset.cast(%{datetime: now}, [:datetime])
-        |> validate_datetime_after(:datetime, now, formatter)
+        |> validate_datetime_after(:datetime, now, formatter: formatter)
 
       assert flat_errors_on(cs, :datetime) == [
                "must be after #{DateTime.to_date(now)}",
@@ -305,10 +305,10 @@ defmodule BitcrowdEcto.ChangesetTest do
       |> validate_date_order(:from, :until)
     end
 
-    defp date_order_changeset(from, until, valid_orders) do
+    defp date_order_changeset(from, until, opts) do
       %TestSchema{from: from}
       |> Ecto.Changeset.cast(%{until: until}, [:until])
-      |> validate_date_order(:from, :until, valid_orders)
+      |> validate_date_order(:from, :until, opts)
     end
 
     setup do
@@ -327,7 +327,10 @@ defmodule BitcrowdEcto.ChangesetTest do
     end
 
     test "both dates on the same day is invalid given only :lt ordering", %{today: today} do
-      assert :date_order in flat_errors_on(date_order_changeset(today, today, :lt), :until)
+      assert :date_order in flat_errors_on(
+               date_order_changeset(today, today, valid_orders: :lt),
+               :until
+             )
     end
 
     test "valid if first date is missing", %{today: today} do
@@ -347,11 +350,7 @@ defmodule BitcrowdEcto.ChangesetTest do
 
     test "with a custom formatter", %{today: today} do
       formatter = fn date -> Date.to_iso8601(date, :basic) end
-
-      cs =
-        %TestSchema{from: today}
-        |> Ecto.Changeset.cast(%{until: today |> Date.add(-1)}, [:until])
-        |> validate_date_order(:from, :until, [:lt, :eq], formatter)
+      cs = date_order_changeset(today, today |> Date.add(-1), formatter: formatter)
 
       assert flat_errors_on(cs, :until) == [
                "must be after '#{Date.to_iso8601(today, :basic)}'",
@@ -367,10 +366,10 @@ defmodule BitcrowdEcto.ChangesetTest do
       |> validate_datetime_order(:from_dt, :until_dt)
     end
 
-    defp datetime_order_changeset(from, until, valid_orders) do
+    defp datetime_order_changeset(from, until, opts) do
       %TestSchema{}
       |> Ecto.Changeset.cast(%{from_dt: from, until_dt: until}, [:from_dt, :until_dt])
-      |> validate_datetime_order(:from_dt, :until_dt, valid_orders)
+      |> validate_datetime_order(:from_dt, :until_dt, opts)
     end
 
     test "date range is valid" do
@@ -410,7 +409,9 @@ defmodule BitcrowdEcto.ChangesetTest do
 
     test "invalid for identical datetimes given only the :lt ordering" do
       assert :datetime_order in flat_errors_on(
-               datetime_order_changeset(~U[2020-01-01 00:00:00Z], ~U[2020-01-01 00:00:00Z], :lt),
+               datetime_order_changeset(~U[2020-01-01 00:00:00Z], ~U[2020-01-01 00:00:00Z],
+                 valid_orders: :lt
+               ),
                :until_dt
              )
     end
@@ -419,10 +420,7 @@ defmodule BitcrowdEcto.ChangesetTest do
       from = ~U[2020-01-01 01:00:00Z]
       until = ~U[2020-01-01 00:00:00Z]
 
-      cs =
-        %TestSchema{}
-        |> Ecto.Changeset.cast(%{from_dt: from, until_dt: until}, [:from_dt, :until_dt])
-        |> validate_datetime_order(:from_dt, :until_dt, [:lt, :eq], &DateTime.to_date/1)
+      cs = datetime_order_changeset(from, until, formatter: &DateTime.to_date/1)
 
       assert flat_errors_on(cs, :until_dt) == [
                "must be after '#{DateTime.to_date(from)}'",

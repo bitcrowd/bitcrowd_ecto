@@ -147,13 +147,10 @@ defmodule BitcrowdEcto.Changeset do
   Validates a field timestamp to be after the given one
   """
   @doc since: "0.6.0"
-  @spec validate_datetime_after(Ecto.Changeset.t(), atom, DateTime.t(), fun) :: Ecto.Changeset.t()
-  def validate_datetime_after(
-        changeset,
-        field,
-        reference_datetime,
-        formatter \\ &DateTime.to_string/1
-      ) do
+  @spec validate_datetime_after(Ecto.Changeset.t(), atom, DateTime.t(), [{:formatter, fun}]) ::
+          Ecto.Changeset.t()
+  def validate_datetime_after(changeset, field, reference_datetime, opts \\ []) do
+    formatter = Keyword.get(opts, :formatter, &DateTime.to_string/1)
     datetime = get_change(changeset, field)
 
     if datetime && DateTime.compare(reference_datetime, datetime) != :lt do
@@ -173,22 +170,23 @@ defmodule BitcrowdEcto.Changeset do
   before the second field. The error is placed on the later field.
   """
   @doc since: "0.6.0"
-  @spec validate_date_order(Ecto.Changeset.t(), atom, atom, list(atom)) :: Ecto.Changeset.t()
-  def validate_date_order(
-        changeset,
-        from_field,
-        until_field,
-        valid_orders \\ [:lt, :eq],
-        formatter \\ &Date.to_string/1
-      ) do
+  @spec validate_date_order(Ecto.Changeset.t(), atom, atom, [
+          {:formatter, fun},
+          {:valid_orders, list(atom)}
+        ]) ::
+          Ecto.Changeset.t()
+  def validate_date_order(changeset, from_field, until_field, opts \\ []) do
+    formatter = Keyword.get(opts, :formatter, &Date.to_string/1)
+    valid_orders = Keyword.get(opts, :valid_orders, [:lt, :eq])
+
     validate_order(
       changeset,
       from_field,
       until_field,
       :date_order,
-      &Date.compare/2,
-      valid_orders,
-      formatter
+      compare_fun: &Date.compare/2,
+      valid_orders: valid_orders,
+      formatter: formatter
     )
   end
 
@@ -197,23 +195,23 @@ defmodule BitcrowdEcto.Changeset do
   the second field. The error is placed on the later field.
   """
   @doc since: "0.6.0"
-  @spec validate_datetime_order(Ecto.Changeset.t(), atom, atom, list(atom), fun) ::
+  @spec validate_datetime_order(Ecto.Changeset.t(), atom, atom, [
+          {:formatter, fun},
+          {:valid_orders, list(atom)}
+        ]) ::
           Ecto.Changeset.t()
-  def validate_datetime_order(
-        changeset,
-        from_field,
-        until_field,
-        valid_orders \\ [:lt, :eq],
-        formatter \\ &DateTime.to_string/1
-      ) do
+  def validate_datetime_order(changeset, from_field, until_field, opts \\ []) do
+    formatter = Keyword.get(opts, :formatter, &DateTime.to_string/1)
+    valid_orders = Keyword.get(opts, :valid_orders, [:lt, :eq])
+
     validate_order(
       changeset,
       from_field,
       until_field,
       :datetime_order,
-      &DateTime.compare/2,
-      valid_orders,
-      formatter
+      compare_fun: &DateTime.compare/2,
+      valid_orders: valid_orders,
+      formatter: formatter
     )
   end
 
@@ -222,17 +220,16 @@ defmodule BitcrowdEcto.Changeset do
   the second field. The error is placed on the second field.
   """
   @doc since: "0.6.0"
-  @spec validate_order(Ecto.Changeset.t(), atom, atom, atom, fun, list(atom), fun) ::
+  @spec validate_order(Ecto.Changeset.t(), atom, atom, atom, [
+          {:formatter, fun},
+          {:compare_fun, fun},
+          {:valid_orders, list(atom)}
+        ]) ::
           Ecto.Changeset.t()
-  def validate_order(
-        changeset,
-        from_field,
-        until_field,
-        validation_key,
-        compare_fun \\ &Kernel.</2,
-        valid_orders \\ [true],
-        formatter \\ &Kernel.to_string/1
-      ) do
+  def validate_order(changeset, from_field, until_field, validation_key, opts \\ []) do
+    formatter = Keyword.get(opts, :formatter, &Kernel.to_string/1)
+    compare_fun = Keyword.get(opts, :compare_fun, &Kernel.</2)
+    valid_orders = Keyword.get(opts, :valid_orders, [true])
     from = get_field(changeset, from_field)
     until = get_field(changeset, until_field)
 
