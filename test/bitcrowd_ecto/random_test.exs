@@ -12,13 +12,13 @@ defmodule BitcrowdEcto.RandomTest do
   describe "url_token/1" do
     test "generates a long random token suitable for inclusion in URLs" do
       token = url_token()
-      assert String.length(token) == 44
+      assert String.length(token) == 24
       assert {:ok, _} = Base.url_decode64(token)
       refute url_token() == url_token()
     end
 
     test "'bytes' parameter controls the length" do
-      assert String.length(url_token(16)) == 24
+      assert String.length(url_token(8)) == 12
     end
   end
 

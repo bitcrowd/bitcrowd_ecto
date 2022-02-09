@@ -18,7 +18,7 @@ defmodule BitcrowdEcto.Random do
   @doc since: "0.6.0"
   @spec url_token() :: String.t()
   @spec url_token(bytes :: non_neg_integer) :: String.t()
-  def url_token(bytes \\ 32) do
+  def url_token(bytes \\ 16) do
     bytes
     |> random_bytes()
     |> Base.url_encode64(padding: true)
