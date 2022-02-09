@@ -1,5 +1,11 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
+## Unreleased
+
+### Added
+
+* Add `BitcrowdEcto.Random` containing various random token generators.
+
 ## [0.5.0] - 2022-02-04
 
 ### Added

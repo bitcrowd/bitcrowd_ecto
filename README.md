@@ -12,5 +12,6 @@ This library contains Bitcrowd's collection of tiny Ecto helpers.
 * `BitcrowdEcto.Changeset` contains mostly validators.
 * `BitcrowdEcto.DateTime` contains date/time helpers.
 * `BitcrowdEcto.Assertions` has an assortment of useful ExUnit assertions related to Ecto schemas.
+* `BitcrowdEcto.Random` contains functions that generate random tokens.
 
 <!-- MDOC -->
