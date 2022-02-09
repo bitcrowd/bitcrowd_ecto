@@ -21,7 +21,7 @@ defmodule BitcrowdEcto.Random do
   def url_token(bytes \\ 32) do
     bytes
     |> random_bytes()
-    |> Base.url_encode64(case: :lower, padding: true)
+    |> Base.url_encode64(padding: true)
   end
 
   @german_passport_id_alphabet String.codepoints("0123456789CFGHJKLMNPRTVWXYZ")
