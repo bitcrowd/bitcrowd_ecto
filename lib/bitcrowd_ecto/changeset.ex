@@ -14,7 +14,7 @@ defmodule BitcrowdEcto.Changeset do
 
   ## Examples
 
-      validate_transition(changeset, field, [{"foo", "bar"}, {"foo", "yolo"}]
+      validate_transition(changeset, field, [{"foo", "bar"}, {"foo", "yolo"}])
 
   This marks the changeset invalid unless the value of `:field` is currently `"foo"` and is
   changed to `"bar"` or `"yolo"`. If the field is not changed, a `{state, state}` transition
@@ -171,6 +171,12 @@ defmodule BitcrowdEcto.Changeset do
   @doc """
   Validates two date fields to be a date range, so if both are set the first field has to be
   before the second field. The error is placed on the later field.
+
+  ## Examples
+
+      validate_date_order(changeset, :from, :to)
+      validate_date_order(changeset, :from, :to, [valid_orders: :lt])
+      validate_date_order(changeset, :from, :to, [formatter: &Date.day_of_week/1])
   """
   @doc since: "0.6.0"
   @spec validate_date_order(Ecto.Changeset.t(), atom, atom, [
@@ -196,6 +202,12 @@ defmodule BitcrowdEcto.Changeset do
   @doc """
   Validates two datetime fields to be a time range, so if both are set the first has to be before
   the second field. The error is placed on the later field.
+
+  ## Examples
+
+      validate_datetime_order(changeset, :from, :to)
+      validate_datetime_order(changeset, :from, :to, [valid_orders: :lt])
+      validate_datetime_order(changeset, :from, :to, [formatter: &DateTime.to_time/1])
   """
   @doc since: "0.6.0"
   @spec validate_datetime_order(Ecto.Changeset.t(), atom, atom, [
@@ -221,6 +233,12 @@ defmodule BitcrowdEcto.Changeset do
   @doc """
   Validates two fields to be a range, so if both are set the first has to be before
   the second field. The error is placed on the second field.
+
+  ## Examples
+
+      validate_order(changeset, :from, :to, :to_is_after_from)
+      validate_order(changeset, :from, :to, :to_is_after_from, [compare_fun: fn a, b -> String.length(a) > String.length(b) end])
+      validate_order(changeset, :from, :to, :to_is_after_from, [formatter: &String.length/1])
   """
   @doc since: "0.6.0"
   @spec validate_order(Ecto.Changeset.t(), atom, atom, atom, [
