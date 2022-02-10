@@ -181,4 +181,276 @@ defmodule BitcrowdEcto.ChangesetTest do
       refute valid_url_error(nil)
     end
   end
+
+  describe "validate_past_datetime/2" do
+    defp past_date_changeset(value) do
+      %TestSchema{}
+      |> Ecto.Changeset.cast(%{datetime: value}, [:datetime])
+      |> validate_past_datetime(:datetime)
+    end
+
+    test "now is valid" do
+      refute :date_in_past in flat_errors_on(past_date_changeset(DateTime.utc_now()), :datetime)
+    end
+
+    test "past dates are valid" do
+      refute :date_in_past in flat_errors_on(
+               past_date_changeset(DateTime.utc_now() |> DateTime.add(-60, :second)),
+               :datetime
+             )
+    end
+
+    test "future dates are invalid" do
+      assert :date_in_past in flat_errors_on(
+               past_date_changeset(DateTime.utc_now() |> DateTime.add(5, :second)),
+               :datetime
+             )
+    end
+
+    test "accepts another now parameter" do
+      value = DateTime.utc_now() |> DateTime.add(-60, :second)
+      now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+      cs =
+        %TestSchema{}
+        |> Ecto.Changeset.cast(%{datetime: value}, [:datetime])
+        |> validate_past_datetime(:datetime, now)
+
+      refute :date_in_past in flat_errors_on(cs, :datetime)
+    end
+  end
+
+  describe "validate_future_datetime/2" do
+    defp future_date_changeset(value) do
+      %TestSchema{}
+      |> Ecto.Changeset.cast(%{datetime: value}, [:datetime])
+      |> validate_future_datetime(:datetime)
+    end
+
+    test "now is not valid" do
+      assert :date_in_future in flat_errors_on(
+               future_date_changeset(DateTime.utc_now()),
+               :datetime
+             )
+    end
+
+    test "future dates are valid" do
+      refute :date_in_future in flat_errors_on(
+               future_date_changeset(DateTime.utc_now() |> DateTime.add(60, :second)),
+               :datetime
+             )
+    end
+
+    test "past dates are invalid" do
+      assert :date_in_future in flat_errors_on(
+               future_date_changeset(DateTime.utc_now() |> DateTime.add(-5, :second)),
+               :datetime
+             )
+    end
+
+    test "accepts another now parameter" do
+      value = DateTime.utc_now() |> DateTime.add(60, :second)
+      now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+      cs =
+        %TestSchema{}
+        |> Ecto.Changeset.cast(%{datetime: value}, [:datetime])
+        |> validate_future_datetime(:datetime, now)
+
+      refute :date_in_future in flat_errors_on(cs, :datetime)
+    end
+  end
+
+  describe "validate_datetime_after/3" do
+    defp datetime_after_changeset(value, datetime) do
+      %TestSchema{}
+      |> Ecto.Changeset.cast(%{datetime: value}, [:datetime])
+      |> validate_datetime_after(:datetime, datetime)
+    end
+
+    test "with a reference date" do
+      now = DateTime.utc_now()
+
+      assert flat_errors_on(
+               datetime_after_changeset(now, now),
+               :datetime
+             ) == ["must be after #{DateTime.to_string(now)}", :datetime_after]
+
+      refute :datetime_after in flat_errors_on(
+               datetime_after_changeset(now, now |> DateTime.add(-1)),
+               :datetime
+             )
+    end
+
+    test "with a custom formatter" do
+      now = DateTime.utc_now()
+      formatter = fn datetime -> DateTime.to_date(datetime) end
+
+      cs =
+        %TestSchema{}
+        |> Ecto.Changeset.cast(%{datetime: now}, [:datetime])
+        |> validate_datetime_after(:datetime, now, formatter: formatter)
+
+      assert flat_errors_on(cs, :datetime) == [
+               "must be after #{DateTime.to_date(now)}",
+               :datetime_after
+             ]
+    end
+  end
+
+  describe "validate_date_order/3" do
+    defp date_order_changeset(from, until) do
+      %TestSchema{from: from}
+      |> Ecto.Changeset.cast(%{until: until}, [:until])
+      |> validate_date_order(:from, :until)
+    end
+
+    defp date_order_changeset(from, until, opts) do
+      %TestSchema{from: from}
+      |> Ecto.Changeset.cast(%{until: until}, [:until])
+      |> validate_date_order(:from, :until, opts)
+    end
+
+    setup do
+      %{today: Date.utc_today()}
+    end
+
+    test "date range is valid", %{today: today} do
+      refute :date_order in flat_errors_on(
+               date_order_changeset(today, today |> Date.add(3)),
+               :until
+             )
+    end
+
+    test "both dates on the same day is valid", %{today: today} do
+      refute :date_order in flat_errors_on(date_order_changeset(today, today), :until)
+    end
+
+    test "both dates on the same day is invalid given only :lt ordering", %{today: today} do
+      assert :date_order in flat_errors_on(
+               date_order_changeset(today, today, valid_orders: :lt),
+               :until
+             )
+    end
+
+    test "valid if first date is missing", %{today: today} do
+      refute :date_order in flat_errors_on(date_order_changeset(nil, today), :until)
+    end
+
+    test "valid if second date is missing", %{today: today} do
+      refute :date_order in flat_errors_on(date_order_changeset(today, nil), :until)
+    end
+
+    test "first date after second date is invalid", %{today: today} do
+      assert :date_order in flat_errors_on(
+               date_order_changeset(today, today |> Date.add(-1)),
+               :until
+             )
+    end
+
+    test "with a custom formatter", %{today: today} do
+      formatter = fn date -> Date.to_iso8601(date, :basic) end
+      cs = date_order_changeset(today, today |> Date.add(-1), formatter: formatter)
+
+      assert flat_errors_on(cs, :until) == [
+               "must be after '#{Date.to_iso8601(today, :basic)}'",
+               :date_order
+             ]
+    end
+  end
+
+  describe "validate_datetime_order/3" do
+    defp datetime_order_changeset(from, until) do
+      %TestSchema{}
+      |> Ecto.Changeset.cast(%{from_dt: from, until_dt: until}, [:from_dt, :until_dt])
+      |> validate_datetime_order(:from_dt, :until_dt)
+    end
+
+    defp datetime_order_changeset(from, until, opts) do
+      %TestSchema{}
+      |> Ecto.Changeset.cast(%{from_dt: from, until_dt: until}, [:from_dt, :until_dt])
+      |> validate_datetime_order(:from_dt, :until_dt, opts)
+    end
+
+    test "date range is valid" do
+      refute :datetime_order in flat_errors_on(
+               datetime_order_changeset(~U[2020-01-01 00:00:00Z], ~U[2020-01-01 01:00:00Z]),
+               :until_dt
+             )
+    end
+
+    test "valid if first datetime is missing" do
+      refute :datetime_order in flat_errors_on(
+               datetime_order_changeset(nil, ~U[2020-01-01 00:00:00Z]),
+               :until_dt
+             )
+    end
+
+    test "valid if second date is missing" do
+      refute :datetime_order in flat_errors_on(
+               datetime_order_changeset(~U[2020-01-01 00:00:00Z], nil),
+               :until_dt
+             )
+    end
+
+    test "invalid if first datetime is after second datetime" do
+      assert :datetime_order in flat_errors_on(
+               datetime_order_changeset(~U[2020-01-01 01:00:00Z], ~U[2020-01-01 00:00:00Z]),
+               :until_dt
+             )
+    end
+
+    test "valid for identical datetimes (by default)" do
+      refute :datetime_order in flat_errors_on(
+               datetime_order_changeset(~U[2020-01-01 00:00:00Z], ~U[2020-01-01 00:00:00Z]),
+               :until_dt
+             )
+    end
+
+    test "invalid for identical datetimes given only the :lt ordering" do
+      assert :datetime_order in flat_errors_on(
+               datetime_order_changeset(~U[2020-01-01 00:00:00Z], ~U[2020-01-01 00:00:00Z],
+                 valid_orders: :lt
+               ),
+               :until_dt
+             )
+    end
+
+    test "with a custom formatter" do
+      from = ~U[2020-01-01 01:00:00Z]
+      until = ~U[2020-01-01 00:00:00Z]
+
+      cs = datetime_order_changeset(from, until, formatter: &DateTime.to_date/1)
+
+      assert flat_errors_on(cs, :until_dt) == [
+               "must be after '#{DateTime.to_date(from)}'",
+               :datetime_order
+             ]
+    end
+  end
+
+  describe "validate_order/5" do
+    defp number_order_changeset(from_number, to_number) do
+      %TestSchema{}
+      |> Ecto.Changeset.cast(%{from_number: from_number, to_number: to_number}, [
+        :from_number,
+        :to_number
+      ])
+      |> validate_order(:from_number, :to_number, :numbers_order_consistency)
+    end
+
+    test "does not add any error when the numbers order is valid" do
+      refute :numbers_order_consistency in flat_errors_on(
+               number_order_changeset(0, 1),
+               :to_number
+             )
+    end
+
+    test "adds an error to the :to_number field in the changeset when the order is invalid" do
+      assert flat_errors_on(
+               number_order_changeset(10, 9),
+               :to_number
+             ) == ["must be after '10'", :numbers_order_consistency]
+    end
+  end
 end
