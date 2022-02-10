@@ -154,10 +154,13 @@ defmodule BitcrowdEcto.Changeset do
     datetime = get_change(changeset, field)
 
     if datetime && DateTime.compare(reference_datetime, datetime) != :lt do
+      reference = formatter.(reference_datetime)
+
       add_error(
         changeset,
         field,
-        "must be after #{formatter.(reference_datetime)}",
+        "must be after %{reference}",
+        reference: reference,
         validation: :datetime_after
       )
     else
@@ -236,8 +239,12 @@ defmodule BitcrowdEcto.Changeset do
     if from && until && !(compare_fun.(from, until) in List.wrap(valid_orders)) do
       stringified_value = formatter.(from)
 
-      message = "must be after '#{stringified_value}'"
-      add_error(changeset, until_field, message, validation: validation_key)
+      message = "must be after '%{stringified_value}'"
+
+      add_error(changeset, until_field, message,
+        validation: validation_key,
+        stringified_value: stringified_value
+      )
     else
       changeset
     end
