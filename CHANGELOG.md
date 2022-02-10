@@ -1,10 +1,11 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
-## Unreleased
+## [0.6.0] - 2022-02-10
 
 ### Added
 
 * Add `BitcrowdEcto.Random` containing various random token generators.
+* Add `validate_past_datetime/3`, `validate_future_datetime/3`, `validate_datetime_after/4`, `validate_date_order/4`, `validate_datetime_order/4` and `validate_order/5` to `BitcrowdEcto.Changeset`.
 
 ## [0.5.0] - 2022-02-04
 
