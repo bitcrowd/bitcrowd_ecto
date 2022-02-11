@@ -22,7 +22,7 @@ This library contains Bitcrowd's collection of tiny Ecto helpers.
 * When the PR is merged:
 
 ```
-git tag -m 'vX.X.X'
+git tag -a 'vX.X.X'
 git push --tags
 mix hex.publish
 ```
