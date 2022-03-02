@@ -7,42 +7,6 @@ defmodule BitcrowdEcto.Migration do
 
   use Ecto.Migration
 
-  @doc """
-  This function grants data manipulation privileges to configured dmlroles for a given schema.
-
-  See `grant_privileges_on_schema/3` for details and options.
-
-  ## Usage
-
-  The easiest way of using this is to issue the command after every `CREATE SCHEMA` call:
-
-      def change do
-        execute("CREATE SCHEMA foo;", "DROP SCHEMA foo;")
-
-        if direction() == :up do
-          BitcrowdEcto.Migration.grant_dml_privileges_on_schema("foo")
-        end
-      end
-
-  ## Configuration
-
-  In order to not repeat your roles in every schema-creating migration, roles are configured for
-  the `:bitcrowd_ecto` OTP app and are read at runtime.
-
-      config :bitcrowd_ecto, dmlroles: ["mydmlrole"]
-
-  This can also be used to disarm this function in development, by passing an empty list.
-  """
-  @doc since: "0.7.0"
-  @spec grant_dml_privileges_on_schema(binary(), keyword()) :: :ok
-  def grant_dml_privileges_on_schema(schema, opts \\ []) do
-    for dmlrole <- dmlroles() do
-      grant_dml_privileges_on_schema(schema, dmlrole, opts)
-    end
-
-    :ok
-  end
-
   @grants [
     "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES",
     "GRANT ALL ON ALL FUNCTIONS",
@@ -85,8 +49,9 @@ defmodule BitcrowdEcto.Migration do
                future objects, defaults to true
   """
   @doc since: "0.7.0"
+  @spec grant_dml_privileges_on_schema(binary(), binary()) :: :ok
   @spec grant_dml_privileges_on_schema(binary(), binary(), keyword()) :: :ok
-  def grant_dml_privileges_on_schema(schema, role, opts) do
+  def grant_dml_privileges_on_schema(schema, role, opts \\ []) do
     execute("GRANT USAGE ON SCHEMA #{schema} TO #{role};")
 
     for grant <- @grants do
@@ -100,9 +65,5 @@ defmodule BitcrowdEcto.Migration do
     end
 
     :ok
-  end
-
-  defp dmlroles do
-    Application.get_env(:bitcrowd_ecto, :dmlroles, [])
   end
 end
