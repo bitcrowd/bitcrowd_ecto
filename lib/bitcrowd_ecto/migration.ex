@@ -27,9 +27,9 @@ defmodule BitcrowdEcto.Migration do
   ## Configuration
 
   In order to not repeat your roles in every schema-creating migration, roles are configured for
-  the `:carbonite` OTP app and are read at runtime.
+  the `:bitcrowd_ecto` OTP app and are read at runtime.
 
-      config :carbonite, dmlroles: ["mydmlrole"]
+      config :bitcrowd_ecto, dmlroles: ["mydmlrole"]
 
   This can also be used to disarm this function in development, by passing an empty list.
   """
