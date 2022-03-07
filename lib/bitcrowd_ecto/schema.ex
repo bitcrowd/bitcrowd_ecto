@@ -46,7 +46,41 @@ defmodule BitcrowdEcto.Schema do
       @timestamps_opts [type: :utc_datetime_usec]
 
       @type t :: %__MODULE__{}
-      @type id :: binary()
+      @type id :: binary
     end
+  end
+
+  @doc """
+  Safely converts a string into an enum member atom. Returns nil if conversion is not posssible.
+
+  ## Example
+
+      iex> to_enum_member(TestEnumSchema, :some_enum, "foo")
+      :foo
+  """
+  @doc since: "0.9.0"
+  @spec to_enum_member(schema :: module, field :: atom, value :: any) :: term | nil
+  def to_enum_member(schema, field, value) when is_atom(value) do
+    to_enum_member(schema, field, to_string(value))
+  end
+
+  def to_enum_member(schema, field, value) do
+    schema
+    |> Ecto.Enum.mappings(field)
+    |> Enum.find_value(fn {member, member_mapping} ->
+      if value == member_mapping, do: member
+    end)
+  end
+
+  @doc """
+  Safely converts a string into an enum member atom. Raises if conversion is not possible.
+  """
+  @doc since: "0.9.0"
+  @spec to_enum_member!(schema :: module, field :: atom, value :: any) :: term | no_return
+  def to_enum_member!(schema, field, value) do
+    to_enum_member(schema, field, value) ||
+      raise ArgumentError, """
+      #{inspect(value)} is not a member of enum #{inspect(field)} of schema #{inspect(schema)}!
+      """
   end
 end
