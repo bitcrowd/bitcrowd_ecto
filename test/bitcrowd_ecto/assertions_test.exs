@@ -371,4 +371,34 @@ defmodule BitcrowdEcto.AssertionsTest do
       end
     end
   end
+
+  describe "assert_change_to_almost_now/2" do
+    test "asserts that the given field changed to the present time" do
+      %TestSchema{datetime: nil}
+      |> change(%{datetime: DateTime.utc_now()})
+      |> assert_change_to_almost_now(:datetime)
+
+      assert_raise ExUnit.AssertionError, fn ->
+        %TestSchema{datetime: nil}
+        |> change(%{some_integer: DateTime.add(DateTime.utc_now(), -60_000_000)})
+        |> assert_change_to_almost_now(:datetime)
+      end
+    end
+
+    test "fails if the given field is not a timestamp" do
+      assert_raise ExUnit.AssertionError, ~r/not a timestamp/, fn ->
+        %TestSchema{some_integer: 1}
+        |> change(%{some_integer: 3})
+        |> assert_change_to_almost_now(:some_integer)
+      end
+    end
+
+    test "fails if the given field does not change" do
+      assert_raise ExUnit.AssertionError, ~r/didn't change/, fn ->
+        %TestSchema{some_integer: 1, datetime: nil}
+        |> change(%{some_integer: 3})
+        |> assert_change_to_almost_now(:datetime)
+      end
+    end
+  end
 end
