@@ -68,6 +68,9 @@ defmodule BitcrowdEcto.Changeset do
   end
 
   @valid_email_re ~r/^[\w.!#$%&’*+\-\/=?\^`{|}~]+@[a-z0-9-]+(\.[a-z0-9-]+)*$/i
+  @valid_email_re_only_web ~r/^[\w.!#$%&’*+\-\/=?\^`{|}~]+@[a-z0-9-]+(\.[a-z0-9-]+)+$/i
+
+  @type validate_email_option :: {:max_length, non_neg_integer} | {:only_web, boolean}
 
   @doc """
   Validates that an email has valid format.
@@ -80,15 +83,26 @@ defmodule BitcrowdEcto.Changeset do
 
   The regex used in this validator doesn't understand half of the inputs, but we don't really care
   for now. Validating super strange emails is not a sport we want to compete in.
+
+  ## Options
+
+  * `:max_length` - restricts the maximum length of the input, defaults to 320
+  * `:only_web` - requires a dot in the domain part, e.g. `domain.tld`, defaults to true
   """
   @doc since: "0.1.0"
-  @spec validate_email(Ecto.Changeset.t(), atom, [{:max_length, non_neg_integer}]) ::
-          Ecto.Changeset.t()
+  @spec validate_email(Ecto.Changeset.t(), atom, [validate_email_option]) :: Ecto.Changeset.t()
   def validate_email(changeset, field, opts \\ []) do
     max_length = Keyword.get(opts, :max_length, 320)
 
+    re =
+      if Keyword.get(opts, :only_web, true) do
+        @valid_email_re_only_web
+      else
+        @valid_email_re
+      end
+
     changeset
-    |> validate_format(field, @valid_email_re)
+    |> validate_format(field, re)
     |> validate_length(field, max: max_length)
   end
 

@@ -75,11 +75,12 @@ defmodule BitcrowdEcto.ChangesetTest do
     defp email_changeset(value) do
       %TestSchema{}
       |> Ecto.Changeset.cast(%{some_string: value}, [:some_string])
-      |> validate_email(:some_string)
     end
 
     defp valid_email_error(value) do
-      :format in flat_errors_on(email_changeset(value), :some_string)
+      cs = value |> email_changeset() |> validate_email(:some_string)
+
+      :format in flat_errors_on(cs, :some_string)
     end
 
     # Our regex comes from somewhere, as does this list of inputs:
@@ -137,6 +138,16 @@ defmodule BitcrowdEcto.ChangesetTest do
       for email <- @invalid_emails do
         assert valid_email_error(email), "email not detected as invalid: #{email}"
       end
+    end
+
+    test ":only_web option" do
+      cs = email_changeset("foo@example")
+
+      cs = validate_email(cs, :some_string, only_web: false)
+      assert cs.valid?
+
+      cs = validate_email(cs, :some_string, only_web: true)
+      refute cs.valid?
     end
 
     test "does not fail on a nil url" do

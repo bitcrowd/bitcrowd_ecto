@@ -6,6 +6,10 @@
 
 * Add `BitcrowdEcto.Schema.to_enum_member/3` and `BitcrowdEcto.Schema.to_enum_member!/3`, functions that safely convert a string to the member of an enum based on reflection on the given schema.
 
+### Changed
+
+* BREAKING: Add `:only_web` option to `BitcrowdEcto.Changeset.validate_email/3` that enforces a dot in the host part of the email address (e.g. `foo@example.net` is valid, `foo@example` is not). Defaults to **true**.
+
 ## [0.8.0] - 2022-03-03
 
 ### Changed
