@@ -4,6 +4,8 @@
 
 ### Added
 
+* Add `BitcrowdEcto.Assertions.assert_change_to_almost_now/2` to assert that the value of a datetime field changed to the present time.
+
 * Add `BitcrowdEcto.Schema.to_enum_member/3` and `BitcrowdEcto.Schema.to_enum_member!/3`, functions that safely convert a string to the member of an enum based on reflection on the given schema.
 
 ### Changed

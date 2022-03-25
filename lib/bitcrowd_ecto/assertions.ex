@@ -26,6 +26,8 @@ defmodule BitcrowdEcto.Assertions do
 
   import ExUnit.Assertions
 
+  alias Ecto.Changeset
+
   @doc """
   A better error helper that transforms the errors on a given field into a list of
   `[<message>, <value of the :validation metadata field>]`.
@@ -39,8 +41,8 @@ defmodule BitcrowdEcto.Assertions do
   using the `:metadata` option.
   """
   @doc since: "0.1.0"
-  @spec flat_errors_on(Ecto.Changeset.t(), atom) :: [String.t() | atom]
-  @spec flat_errors_on(Ecto.Changeset.t(), atom, [{:metadata, atom}]) :: [String.t() | atom]
+  @spec flat_errors_on(Changeset.t(), atom) :: [String.t() | atom]
+  @spec flat_errors_on(Changeset.t(), atom, [{:metadata, atom}]) :: [String.t() | atom]
   def flat_errors_on(changeset, field, opts \\ []) do
     metadata =
       opts
@@ -70,9 +72,9 @@ defmodule BitcrowdEcto.Assertions do
   Returns the changeset for chainability.
   """
   @doc since: "0.1.0"
-  @spec assert_error_on(Ecto.Changeset.t(), atom, atom | [atom]) :: Ecto.Changeset.t() | no_return
-  @spec assert_error_on(Ecto.Changeset.t(), atom, atom | [atom], [{:metadata, atom}]) ::
-          Ecto.Changeset.t() | no_return
+  @spec assert_error_on(Changeset.t(), atom, atom | [atom]) :: Changeset.t() | no_return
+  @spec assert_error_on(Changeset.t(), atom, atom | [atom], [{:metadata, atom}]) ::
+          Changeset.t() | no_return
   def assert_error_on(changeset, field, error, opts \\ [])
 
   def assert_error_on(changeset, _field, [], _opts), do: changeset
@@ -96,8 +98,8 @@ defmodule BitcrowdEcto.Assertions do
     Returns the changeset for chainability.
     """
     @doc since: "0.1.0"
-    @spec unquote(:"assert_#{validation}_error_on")(Ecto.Changeset.t(), atom) ::
-            Ecto.Changeset.t() | no_return
+    @spec unquote(:"assert_#{validation}_error_on")(Changeset.t(), atom) ::
+            Changeset.t() | no_return
     def unquote(:"assert_#{validation}_error_on")(changeset, field) do
       assert_error_on(changeset, field, unquote(validation))
     end
@@ -110,8 +112,8 @@ defmodule BitcrowdEcto.Assertions do
     Returns the changeset for chainability.
     """
     @doc since: "0.1.0"
-    @spec unquote(:"assert_#{constraint}_constraint_error_on")(Ecto.Changeset.t(), atom) ::
-            Ecto.Changeset.t() | no_return
+    @spec unquote(:"assert_#{constraint}_constraint_error_on")(Changeset.t(), atom) ::
+            Changeset.t() | no_return
     def unquote(:"assert_#{constraint}_constraint_error_on")(changeset, field) do
       assert_error_on(changeset, field, unquote(constraint))
     end
@@ -123,7 +125,7 @@ defmodule BitcrowdEcto.Assertions do
   Returns the changeset for chainability.
   """
   @doc since: "0.1.0"
-  @spec refute_errors_on(Ecto.Changeset.t(), atom) :: Ecto.Changeset.t() | no_return
+  @spec refute_errors_on(Changeset.t(), atom) :: Changeset.t() | no_return
   def refute_errors_on(changeset, field) do
     assert flat_errors_on(changeset, field) == []
 
@@ -136,7 +138,7 @@ defmodule BitcrowdEcto.Assertions do
   Returns the changeset for chainability.
   """
   @doc since: "0.1.0"
-  @spec assert_changes(Ecto.Changeset.t(), atom) :: Ecto.Changeset.t() | no_return
+  @spec assert_changes(Changeset.t(), atom) :: Changeset.t() | no_return
   def assert_changes(changeset, field) do
     assert Map.has_key?(changeset.changes, field)
 
@@ -149,7 +151,7 @@ defmodule BitcrowdEcto.Assertions do
   Returns the changeset for chainability.
   """
   @doc since: "0.1.0"
-  @spec assert_changes(Ecto.Changeset.t(), atom, any) :: Ecto.Changeset.t() | no_return
+  @spec assert_changes(Changeset.t(), atom, any) :: Changeset.t() | no_return
   def assert_changes(changeset, field, value) do
     assert Map.get(changeset.changes, field) == value
 
@@ -162,7 +164,7 @@ defmodule BitcrowdEcto.Assertions do
   Returns the changeset for chainability.
   """
   @doc since: "0.1.0"
-  @spec refute_changes(Ecto.Changeset.t(), atom) :: Ecto.Changeset.t() | no_return
+  @spec refute_changes(Changeset.t(), atom) :: Changeset.t() | no_return
   def refute_changes(changeset, field) do
     refute Map.has_key?(changeset.changes, field)
 
@@ -180,10 +182,10 @@ defmodule BitcrowdEcto.Assertions do
   """
   @doc since: "0.1.0"
   @spec assert_difference((() -> float | integer), float | integer, (() -> any)) ::
-          Ecto.Changeset.t() | no_return
+          Changeset.t() | no_return
   @spec assert_difference((() -> float | integer), float | integer, (() -> any), [
           {:message, String.t()}
-        ]) :: Ecto.Changeset.t() | no_return
+        ]) :: Changeset.t() | no_return
   def assert_difference(what, by, how, opts \\ []) do
     msg = Keyword.get(opts, :message, "#{inspect(what)} hasn't changed by #{by}")
 
@@ -212,9 +214,9 @@ defmodule BitcrowdEcto.Assertions do
       end
   """
   @doc since: "0.1.0"
-  @spec refute_difference((() -> any), (() -> any)) :: Ecto.Changeset.t() | no_return
+  @spec refute_difference((() -> any), (() -> any)) :: Changeset.t() | no_return
   @spec refute_difference((() -> any), (() -> any), [{:message, String.t()}]) ::
-          Ecto.Changeset.t() | no_return
+          Changeset.t() | no_return
   def refute_difference(what, how, opts \\ []) do
     msg = Keyword.get(opts, :message, "#{inspect(what)} has changed")
 
@@ -244,7 +246,7 @@ defmodule BitcrowdEcto.Assertions do
   """
   @doc since: "0.1.0"
   @spec assert_count_difference(Ecto.Repo.t(), module, integer, (() -> any)) ::
-          Ecto.Changeset.t() | no_return
+          Changeset.t() | no_return
   def assert_count_difference(repo, schema, by, how) do
     assert_difference(fn -> repo.count(schema) end, by, how,
       message: "#{inspect(schema)} hasn't changed by #{by}"
@@ -265,7 +267,7 @@ defmodule BitcrowdEcto.Assertions do
   """
   @doc since: "0.1.0"
   @spec assert_count_differences(Ecto.Repo.t(), [{module, integer}], (() -> any)) ::
-          Ecto.Changeset.t() | no_return
+          Changeset.t() | no_return
   def assert_count_differences(_repo, [], how), do: how.()
 
   def assert_count_differences(repo, [{schema, by} | rest], how) do
@@ -326,8 +328,34 @@ defmodule BitcrowdEcto.Assertions do
   Allows to compare a DateTime field to the present time.
   """
   @doc since: "0.3.0"
-  def assert_almost_now(timestamp) do
+  def assert_almost_now(%DateTime{} = timestamp) do
     assert_almost_coincide(timestamp, DateTime.utc_now())
+  end
+
+  def assert_almost_now(value) do
+    raise(ExUnit.AssertionError, "The given value #{value} is not a timestamp.")
+  end
+
+  @doc """
+  Asserts that the value of a datetime field changed to the present time.
+
+  ## Example
+
+      %TestSchema{datetime: nil}
+      |> Ecto.Changeset.change(%{datetime: DateTime.utc_now()})
+      |> assert_change_to_almost_now(:datetime)
+  """
+  @doc since: "0.9.0"
+  @spec assert_change_to_almost_now(Changeset.t(), atom()) :: Changeset.t() | no_return
+  def assert_change_to_almost_now(%Changeset{} = changeset, field) do
+    case Changeset.fetch_change(changeset, field) do
+      {:ok, timestamp} ->
+        assert_almost_now(timestamp)
+        changeset
+
+      _ ->
+        raise ExUnit.AssertionError, "The field #{field} didn't change."
+    end
   end
 
   @doc """
