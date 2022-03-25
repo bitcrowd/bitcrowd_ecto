@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.9.0] - 2022-03-25
+
 ### Added
 
 * Add `BitcrowdEcto.Assertions.assert_change_to_almost_now/2` to assert that the value of a datetime field changed to the present time.
