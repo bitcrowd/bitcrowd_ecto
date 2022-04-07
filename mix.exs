@@ -78,7 +78,8 @@ defmodule BitcrowdEcto.MixProject do
       {:ex_doc, "> 0.0.0", only: [:dev], runtime: false},
       {:ex_machina, "~> 2.7", only: [:dev, :test]},
       {:junit_formatter, "~> 3.3", only: [:test]},
-      {:postgrex, "> 0.0.0", only: [:dev, :test]}
+      {:postgrex, "> 0.0.0", only: [:dev, :test]},
+      {:tzdata, "> 0.0.0", only: [:dev, :test]}
     ]
   end
 
