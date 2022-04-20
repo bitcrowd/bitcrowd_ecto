@@ -33,9 +33,8 @@ defmodule BitcrowdEcto.Changeset do
         changeset,
         field,
         "%{field} cannot transition from %{from} to %{to}",
-        field: field,
-        from: inspect(from),
-        to: inspect(to),
+        from: from,
+        to: to,
         validation: :transition
       )
     end
