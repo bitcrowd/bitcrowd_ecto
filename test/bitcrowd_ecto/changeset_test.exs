@@ -33,6 +33,14 @@ defmodule BitcrowdEcto.ChangesetTest do
       assert transition_error(nil, nil, [])
       assert transition_error("foo", nil, [])
     end
+
+    test "includes from/to fields in error details" do
+      assert %Ecto.Changeset{errors: [some_string: {_msg, details}]} =
+               transition_changeset(:foo, :bar, [])
+
+      assert details[:from] == :foo
+      assert details[:to] == :bar
+    end
   end
 
   describe "validate_changed/2" do

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Changed
+
+* BREAKING: Stopped `inspect`ing the `from`/`to` fields in `validate_transition/3` error details. Previously atom columns (e.g. from `Ecto.Enum`) would result in `[from: ":foo", to: ":bar"]` error details, now these atoms are inserted unchanged as `[from: :foo, to: :bar]`
+* BREAKING: Removed `:field` from `validate_transition/3` error details as it is redundant with the error field.
+
 ## [0.9.0] - 2022-03-25
 
 ### Added
