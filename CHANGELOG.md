@@ -5,6 +5,7 @@
 ### Added
 
 * New `BitcrowdEcto.Assertions.assert_*_constraint_on/2` matchers assert on constraints on changesets without going to the database.
+* Add `BitcrowdEcto.DateTime.shift/2` and `BitcrowdEcto.DateTime.beginning_of_day/1`.
 
 ### Changed
 
