@@ -105,7 +105,7 @@ defmodule BitcrowdEcto.Assertions do
     end
   end
 
-  for constraint <- [:unique, :foreign, :no_assoc] do
+  for constraint <- [:unique, :no_assoc] do
     @doc """
     Asserts that a changeset contains a failed "#{constraint}" constraint validation on a given field.
 
@@ -117,6 +117,84 @@ defmodule BitcrowdEcto.Assertions do
     def unquote(:"assert_#{constraint}_constraint_error_on")(changeset, field) do
       assert_error_on(changeset, field, unquote(constraint))
     end
+  end
+
+  @doc """
+  Asserts that a changeset contains a failed "foreign_key" constraint validation on a given field.
+
+  Returns the changeset for chainability.
+  """
+  @doc since: "0.1.0"
+  @spec assert_foreign_constraint_error_on(Changeset.t(), atom) :: Changeset.t() | no_return
+  @deprecated "Use assert_foreign_key_constraint_error_on/2 instead"
+  def assert_foreign_constraint_error_on(changeset, field) do
+    assert_foreign_key_constraint_error_on(changeset, field)
+  end
+
+  @doc """
+  Asserts that a changeset contains a failed "foreign_key" constraint validation on a given field.
+
+  Returns the changeset for chainability.
+  """
+  @doc since: "0.10.0"
+  def assert_foreign_key_constraint_error_on(changeset, field) do
+    assert_error_on(changeset, field, :foreign)
+  end
+
+  for {constraint, {type, error_type}} <- [
+        unique: {:unique, :unique},
+        foreign_key: {:foreign_key, :foreign},
+        no_assoc: {:foreign_key, :no_assoc}
+      ] do
+    @doc """
+    Asserts that a changeset contains a constraint on a given field.
+
+    This function looks into the changeset's (internal) `constraints` field to see if a
+    `*_constraint` function has been called on it. Tests using this do not need to actually
+    perform the database operation. However, given that the constraints only work in
+    combination with a corresponding database constraint, it is advisable to perform the
+    operation and use `assert_#{constraint}_constraint_error_on/2` instead.
+
+    Returns the changeset for chainability.
+
+    ## Options
+
+    The given options are used as match values against the constraint map. They loosely
+    correspond to the options of `Ecto.Changeset.#{constraint}_constraint/2`, only `:name`
+    becomes `:constraint`.
+    """
+    @doc since: "0.10.0"
+    @spec unquote(:"assert_#{constraint}_constraint_on")(Changeset.t(), atom) ::
+            Changeset.t() | no_return
+    @spec unquote(:"assert_#{constraint}_constraint_on")(Changeset.t(), atom, keyword) ::
+            Changeset.t() | no_return
+    def unquote(:"assert_#{constraint}_constraint_on")(changeset, field, opts \\ []) do
+      opts =
+        Keyword.merge(opts, error_type: unquote(error_type), type: unquote(type), field: field)
+
+      assert(
+        has_matching_constraint?(changeset, opts),
+        """
+        Expected changeset to have a #{unquote(constraint)} constraint on field #{inspect(field)},
+        but didn't find one.
+
+        Constraints:
+
+        #{inspect(changeset.constraints, pretty: true)}
+        """
+      )
+
+      changeset
+    end
+  end
+
+  # Checks that a changeset has a constraint with matching attributes.
+  defp has_matching_constraint?(changeset, attributes) do
+    Enum.any?(changeset.constraints, fn constraint ->
+      Enum.all?(attributes, fn {key, value} ->
+        constraint[key] == value
+      end)
+    end)
   end
 
   @doc """

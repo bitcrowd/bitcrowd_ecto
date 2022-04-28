@@ -2,10 +2,15 @@
 
 ## Unreleased
 
+### Added
+
+* New `BitcrowdEcto.Assertions.assert_*_constraint_on/2` matchers assert on constraints on changesets without going to the database.
+
 ### Changed
 
 * BREAKING: Stopped `inspect`ing the `from`/`to` fields in `validate_transition/3` error details. Previously atom columns (e.g. from `Ecto.Enum`) would result in `[from: ":foo", to: ":bar"]` error details, now these atoms are inserted unchanged as `[from: :foo, to: :bar]`
 * BREAKING: Removed `:field` from `validate_transition/3` error details as it is redundant with the error field.
+* Deprecated `BitcrowdEcto.Assertions.assert_foreign_constraint_error_on/2` in favour of new `assert_foreign_key_constraint_error_on/2`. Constraint assert functions are all called after the `Ecto.Changeset.*_constraint` functions now, not after internal error type names.
 
 ## [0.9.0] - 2022-03-25
 

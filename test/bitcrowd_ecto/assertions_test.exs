@@ -158,17 +158,17 @@ defmodule BitcrowdEcto.AssertionsTest do
     end
   end
 
-  describe "assert_foreign_constraint_error_on/2" do
+  describe "assert_foreign_key_constraint_error_on/2" do
     test "asserts on the :foreign error on a field" do
       cs =
         %TestSchema{}
         |> change(%{})
         |> add_error(:some_string, "does not exist", constraint: :foreign)
 
-      assert assert_foreign_constraint_error_on(cs, :some_string) == cs
+      assert assert_foreign_key_constraint_error_on(cs, :some_string) == cs
 
       assert_raise ExUnit.AssertionError, fn ->
-        assert_foreign_constraint_error_on(cs, :some_integer)
+        assert_foreign_key_constraint_error_on(cs, :some_integer)
       end
     end
   end
@@ -178,12 +178,72 @@ defmodule BitcrowdEcto.AssertionsTest do
       cs =
         %TestSchema{}
         |> change(%{})
-        |> add_error(:some_string, "is still associated with this entry", constraint: :no_assoc)
+        |> add_error(:children, "is still associated with this entry", constraint: :no_assoc)
 
-      assert assert_no_assoc_constraint_error_on(cs, :some_string) == cs
+      assert assert_no_assoc_constraint_error_on(cs, :children) == cs
 
       assert_raise ExUnit.AssertionError, fn ->
-        assert_no_assoc_constraint_error_on(cs, :some_integer)
+        assert_no_assoc_constraint_error_on(cs, :parent)
+      end
+    end
+  end
+
+  describe "assert_foreign_key_constraint_on/3" do
+    test "asserts on the :foreign_key/:foreign constraint on a field" do
+      cs =
+        %TestSchema{}
+        |> change(%{})
+        |> foreign_key_constraint(:some_string, name: "some-name")
+
+      assert assert_foreign_key_constraint_on(cs, :some_string) == cs
+      assert assert_foreign_key_constraint_on(cs, :some_string, constraint: "some-name") == cs
+
+      assert_raise ExUnit.AssertionError, fn ->
+        assert_foreign_key_constraint_on(cs, :some_integer)
+      end
+
+      assert_raise ExUnit.AssertionError, fn ->
+        assert_foreign_key_constraint_on(cs, :some_string, constraint: "some-other-name")
+      end
+    end
+  end
+
+  describe "assert_no_assoc_constraint_on/3" do
+    test "asserts on the :foreign_key/:no_assoc constraint on a field" do
+      cs =
+        %TestSchema{}
+        |> change(%{})
+        |> no_assoc_constraint(:children, name: "some-name")
+
+      assert assert_no_assoc_constraint_on(cs, :children) == cs
+      assert assert_no_assoc_constraint_on(cs, :children, constraint: "some-name") == cs
+
+      assert_raise ExUnit.AssertionError, fn ->
+        assert_no_assoc_constraint_on(cs, :parent)
+      end
+
+      assert_raise ExUnit.AssertionError, fn ->
+        assert_no_assoc_constraint_on(cs, :children, constraint: "some-other-name")
+      end
+    end
+  end
+
+  describe "assert_unique_constraint_on/3" do
+    test "asserts on the :unique constraint on a field" do
+      cs =
+        %TestSchema{}
+        |> change(%{})
+        |> unique_constraint(:some_string, name: "some-name")
+
+      assert assert_unique_constraint_on(cs, :some_string) == cs
+      assert assert_unique_constraint_on(cs, :some_string, constraint: "some-name") == cs
+
+      assert_raise ExUnit.AssertionError, fn ->
+        assert_unique_constraint_on(cs, :some_integer)
+      end
+
+      assert_raise ExUnit.AssertionError, fn ->
+        assert_unique_constraint_on(cs, :some_string, constraint: "some-other-name")
       end
     end
   end
