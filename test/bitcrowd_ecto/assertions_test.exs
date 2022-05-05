@@ -447,7 +447,7 @@ defmodule BitcrowdEcto.AssertionsTest do
   end
 
   describe "assert_changeset_valid/1" do
-    test "works" do
+    test "asserts that a changesets 'valid?' flag is true" do
       %{some_string: "Yuju!"}
       |> changeset()
       |> assert_changeset_valid()
@@ -461,7 +461,7 @@ defmodule BitcrowdEcto.AssertionsTest do
   end
 
   describe "refute_changeset_valid/1" do
-    test "works" do
+    test "asserts that a changeset's 'valid?' flag is false" do
       %{some_string: 1_000}
       |> changeset()
       |> refute_changeset_valid()

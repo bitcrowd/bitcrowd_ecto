@@ -457,14 +457,14 @@ defmodule BitcrowdEcto.Assertions do
     assert_sorted_equal(Enum.map(a, accessor), Enum.map(b, accessor))
   end
 
-  @doc since: "0.10.1"
+  @doc since: "0.11.0"
   @spec assert_changeset_valid(Changeset.t()) :: Changeset.t() | no_return
   def assert_changeset_valid(%Changeset{} = cs) do
     assert cs.valid?
     cs
   end
 
-  @doc since: "0.10.1"
+  @doc since: "0.11.0"
   @spec refute_changeset_valid(Changeset.t()) :: Changeset.t() | no_return
   def refute_changeset_valid(%Changeset{} = cs) do
     refute cs.valid?
