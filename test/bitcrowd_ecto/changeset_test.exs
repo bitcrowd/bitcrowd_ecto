@@ -472,4 +472,42 @@ defmodule BitcrowdEcto.ChangesetTest do
              ) == ["must be after '10'", :numbers_order_consistency]
     end
   end
+
+  describe "validate_hex_color/2" do
+    test "validate representative hexadecimal colors" do
+      valid_cs = fn cs, expected -> assert cs.valid? == expected end
+
+      test_cases = [
+        %{pattern: "#aaaaaa", valid: true},
+        %{pattern: "#AAAAAA", valid: true},
+        %{pattern: "#", valid: false}
+      ]
+
+      Enum.each(test_cases, fn test_case ->
+        %TestSchema{}
+        |> Ecto.Changeset.cast(%{some_string: test_case.pattern}, [:some_string])
+        |> validate_hex_color(:some_string)
+        |> valid_cs.(test_case.valid)
+      end)
+    end
+  end
+
+  describe "validate_date_after/3" do
+    test "validate representative dates" do
+      valid_cs = fn cs, expected -> assert cs.valid? == expected end
+
+      test_cases = [
+        %{date_field: ~D[2022-06-01], ref_date: ~D[2022-06-01], valid: true},
+        %{date_field: ~D[2022-06-01], ref_date: ~D[2022-05-01], valid: true},
+        %{date_field: ~D[2022-06-01], ref_date: ~D[2022-07-01], valid: false}
+      ]
+
+      Enum.each(test_cases, fn test_case ->
+        %TestSchema{}
+        |> Ecto.Changeset.cast(%{from: test_case.date_field}, [:from])
+        |> validate_date_after(:from, test_case.ref_date)
+        |> valid_cs.(test_case.valid)
+      end)
+    end
+  end
 end
