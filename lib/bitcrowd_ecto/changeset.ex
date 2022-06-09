@@ -286,6 +286,8 @@ defmodule BitcrowdEcto.Changeset do
   @doc """
   Validates a changeset field with hexadecimal color format
   """
+  @doc since: "0.11.0"
+  @spec validate_hex_color(Ecto.Changeset.t(), atom) :: Ecto.Changeset.t()
   def validate_hex_color(changeset, hex_color_field) do
     validate_format(changeset, hex_color_field, @hex_color_regex)
   end
