@@ -1,5 +1,12 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
+## [0.11.0] - 2022-06-09
+
+## Added
+
+* Add `BitcrowdEcto.Changeset.validate_date_after/3` Validates a date field in the changeset is after the given reference date.
+* Add `BitcrowdEcto.Changeset.validate_hex_color/2` validates a changeset field has hexadecimal color format.
+
 ## [0.10.0] - 2022-04-28
 
 ### Added
