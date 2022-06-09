@@ -291,9 +291,10 @@ defmodule BitcrowdEcto.Changeset do
   end
 
   @doc """
-  validates a date field in the changeset is after the reference date
-  passed as `ref_date`
+  Validates a date field in the changeset is after the given reference date.
   """
+  @doc since: "0.11.0"
+  @spec validate_date_after(Ecto.Changeset.t(), atom, Date.t()) :: Ecto.Changeset.t()
   def validate_date_after(changeset, date_field, ref_date) do
     date = get_field(changeset, date_field)
     r = Date.compare(date, ref_date)
