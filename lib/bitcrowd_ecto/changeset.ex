@@ -297,7 +297,7 @@ defmodule BitcrowdEcto.Changeset do
   """
   @doc since: "0.11.0"
   @spec validate_date_after(Ecto.Changeset.t(), atom, Date.t()) :: Ecto.Changeset.t()
-  def validate_date_after(changeset, date_field, ref_date) do
+  def validate_date_after(changeset, date_field, ref_date, opts \\ []) do
     date = get_field(changeset, date_field)
 
     if date do
@@ -306,7 +306,10 @@ defmodule BitcrowdEcto.Changeset do
       if r in [:eq, :gt] do
         changeset
       else
-        add_error(changeset, date_field, "must be after or equal #{ref_date}",
+        formatter = Keyword.get(opts, :formatter, &Date.to_string/1)
+        reference = formatter.(ref_date)
+
+        add_error(changeset, date_field, "must be after or equal to #{reference}",
           validation: :date_after
         )
       end
