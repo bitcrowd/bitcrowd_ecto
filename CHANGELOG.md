@@ -1,5 +1,15 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
+
+## Unreleased 
+
+
+### Added
+
+* Add `BitcrowdEcto.Assertions.assert_changeset_valid/1`.
+
+* Add `BitcrowdEcto.Assertions.refute_changeset_valid/1`.
+
 ## [0.10.0] - 2022-04-28
 
 ### Added

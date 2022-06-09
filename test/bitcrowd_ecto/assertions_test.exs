@@ -2,15 +2,14 @@
 
 defmodule BitcrowdEcto.AssertionsTest do
   use BitcrowdEcto.TestCase, async: true
-  import BitcrowdEcto.Assertions
+  import BitcrowdEcto.{Assertions, TestSchema}
 
   doctest BitcrowdEcto.Assertions, import: true
 
   describe "flat_errors_on/2" do
     test "flattens all errors and their validation metadata into a list" do
       cs =
-        %TestSchema{}
-        |> change(%{})
+        changeset()
         |> add_error(:some_string, "is wrong", validation: :wrong)
         |> add_error(:some_string, "is really wrong", validation: :really_wrong)
         |> add_error(:some_integer, "is also wrong", validation: :also_wrong)
@@ -26,10 +25,7 @@ defmodule BitcrowdEcto.AssertionsTest do
     end
 
     test "can fetch metadata by a given key" do
-      cs =
-        %TestSchema{}
-        |> change(%{})
-        |> add_error(:some_string, "is wrong", foo: :bar)
+      cs = changeset() |> add_error(:some_string, "is wrong", foo: :bar)
 
       assert :bar in flat_errors_on(cs, :some_string, metadata: :foo)
       assert :bar in flat_errors_on(cs, :some_string, metadata: [:foo])
@@ -39,11 +35,9 @@ defmodule BitcrowdEcto.AssertionsTest do
   describe "assert_error_on/4" do
     test "asserts that a given error is present on a field" do
       cs =
-        %TestSchema{}
-        |> change(%{})
+        changeset()
         |> validate_required(:some_string)
-
-      assert assert_error_on(cs, :some_string, :required)
+        |> assert_error_on(:some_string, :required)
 
       assert_raise ExUnit.AssertionError, fn ->
         assert assert_error_on(cs, :some_integer, :length)
@@ -52,26 +46,22 @@ defmodule BitcrowdEcto.AssertionsTest do
 
     test "can assert on multiple errors" do
       cs =
-        %TestSchema{}
-        |> change(%{some_string: "foo", some_integer: 1})
+        %{some_string: "foo", some_integer: 1}
+        |> changeset()
         |> validate_length(:some_string, min: 10)
         |> validate_inclusion(:some_string, ["bar"])
         |> validate_inclusion(:some_integer, [5])
-
-      assert assert_error_on(cs, :some_string, [:length, :inclusion])
+        |> assert_error_on(:some_string, [:length, :inclusion])
 
       assert_raise ExUnit.AssertionError, fn ->
-        assert assert_error_on(cs, :some_integer, [:inclusion, :number])
+        assert_error_on(cs, :some_integer, [:inclusion, :number])
       end
     end
   end
 
   describe "assert_required_error_on/2" do
     test "asserts on the :required error on a field" do
-      cs =
-        %TestSchema{}
-        |> change(%{})
-        |> validate_required(:some_string)
+      cs = changeset() |> validate_required(:some_string)
 
       assert assert_required_error_on(cs, :some_string) == cs
 
@@ -84,8 +74,8 @@ defmodule BitcrowdEcto.AssertionsTest do
   describe "assert_format_error_on/2" do
     test "asserts on the :format error on a field" do
       cs =
-        %TestSchema{}
-        |> change(%{some_string: "foo"})
+        %{some_string: "foo"}
+        |> changeset()
         |> validate_format(:some_string, ~r/bar/)
 
       assert assert_format_error_on(cs, :some_string) == cs
@@ -99,8 +89,8 @@ defmodule BitcrowdEcto.AssertionsTest do
   describe "assert_number_error_on/2" do
     test "asserts on the :number error on a field" do
       cs =
-        %TestSchema{}
-        |> change(%{some_integer: 5})
+        %{some_integer: 5}
+        |> changeset()
         |> validate_number(:some_integer, greater_than: 5)
 
       assert assert_number_error_on(cs, :some_integer) == cs
@@ -114,8 +104,8 @@ defmodule BitcrowdEcto.AssertionsTest do
   describe "assert_inclusion_error_on/2" do
     test "asserts on the :inclusion error on a field" do
       cs =
-        %TestSchema{}
-        |> change(%{some_string: "foo"})
+        %{some_string: "foo"}
+        |> changeset()
         |> validate_inclusion(:some_string, ["bar", "baz"])
 
       assert assert_inclusion_error_on(cs, :some_string) == cs
@@ -129,8 +119,8 @@ defmodule BitcrowdEcto.AssertionsTest do
   describe "assert_acceptance_error_on/2" do
     test "asserts on the :acceptance error on a field" do
       cs =
-        %TestSchema{}
-        |> cast(%{"some_boolean" => false}, [:some_boolean])
+        %{"some_boolean" => false}
+        |> changeset()
         |> validate_acceptance(:some_boolean)
 
       assert assert_acceptance_error_on(cs, :some_boolean) == cs
@@ -146,8 +136,7 @@ defmodule BitcrowdEcto.AssertionsTest do
   describe "assert_unique_constraint_error_on/2" do
     test "asserts on the :unique error on a field" do
       cs =
-        %TestSchema{}
-        |> change(%{})
+        changeset()
         |> add_error(:some_string, "has already been taken", constraint: :unique)
 
       assert assert_unique_constraint_error_on(cs, :some_string) == cs
@@ -161,8 +150,7 @@ defmodule BitcrowdEcto.AssertionsTest do
   describe "assert_foreign_key_constraint_error_on/2" do
     test "asserts on the :foreign error on a field" do
       cs =
-        %TestSchema{}
-        |> change(%{})
+        changeset()
         |> add_error(:some_string, "does not exist", constraint: :foreign)
 
       assert assert_foreign_key_constraint_error_on(cs, :some_string) == cs
@@ -176,8 +164,7 @@ defmodule BitcrowdEcto.AssertionsTest do
   describe "assert_no_assoc_constraint_error_on/2" do
     test "asserts on the :no_assoc error on a field" do
       cs =
-        %TestSchema{}
-        |> change(%{})
+        changeset()
         |> add_error(:children, "is still associated with this entry", constraint: :no_assoc)
 
       assert assert_no_assoc_constraint_error_on(cs, :children) == cs
@@ -250,10 +237,7 @@ defmodule BitcrowdEcto.AssertionsTest do
 
   describe "refute_errors_on/2" do
     test "asserts that a field does not have errors" do
-      cs =
-        %TestSchema{}
-        |> change(%{})
-        |> validate_required(:some_string)
+      cs = changeset() |> validate_required(:some_string)
 
       assert refute_errors_on(cs, :some_integer) == cs
 
@@ -265,7 +249,7 @@ defmodule BitcrowdEcto.AssertionsTest do
 
   describe "assert_changes/2" do
     test "asserts that a field is changed" do
-      cs = change(%TestSchema{}, %{some_string: "foo"})
+      cs = changeset(%{some_string: "foo"})
 
       assert assert_changes(cs, :some_string) == cs
 
@@ -277,7 +261,7 @@ defmodule BitcrowdEcto.AssertionsTest do
 
   describe "assert_changes/3" do
     test "asserts that a field is changed to a specific valud" do
-      cs = change(%TestSchema{}, %{some_string: "foo"})
+      cs = changeset(%{some_string: "foo"})
 
       assert assert_changes(cs, :some_string, "foo") == cs
 
@@ -289,7 +273,7 @@ defmodule BitcrowdEcto.AssertionsTest do
 
   describe "refute_changes/2" do
     test "asserts that a field is not changed" do
-      cs = change(%TestSchema{}, %{some_string: "foo"})
+      cs = changeset(%{some_string: "foo"})
 
       assert refute_changes(cs, :some_integer) == cs
 
@@ -434,30 +418,58 @@ defmodule BitcrowdEcto.AssertionsTest do
 
   describe "assert_change_to_almost_now/2" do
     test "asserts that the given field changed to the present time" do
-      %TestSchema{datetime: nil}
-      |> change(%{datetime: DateTime.utc_now()})
+      %{datetime: DateTime.utc_now()}
+      |> changeset()
       |> assert_change_to_almost_now(:datetime)
 
       assert_raise ExUnit.AssertionError, fn ->
-        %TestSchema{datetime: nil}
-        |> change(%{some_integer: DateTime.add(DateTime.utc_now(), -60_000_000)})
+        %{datetime: DateTime.add(DateTime.utc_now(), -60_000_000)}
+        |> changeset()
         |> assert_change_to_almost_now(:datetime)
       end
     end
 
     test "fails if the given field is not a timestamp" do
       assert_raise ExUnit.AssertionError, ~r/not a timestamp/, fn ->
-        %TestSchema{some_integer: 1}
-        |> change(%{some_integer: 3})
+        %{some_integer: 1}
+        |> changeset()
         |> assert_change_to_almost_now(:some_integer)
       end
     end
 
     test "fails if the given field does not change" do
       assert_raise ExUnit.AssertionError, ~r/didn't change/, fn ->
-        %TestSchema{some_integer: 1, datetime: nil}
-        |> change(%{some_integer: 3})
+        %{some_integer: 1}
+        |> changeset()
         |> assert_change_to_almost_now(:datetime)
+      end
+    end
+  end
+
+  describe "assert_changeset_valid/1" do
+    test "asserts that a changesets 'valid?' flag is true" do
+      %{some_string: "Yuju!"}
+      |> changeset()
+      |> assert_changeset_valid()
+
+      assert_raise ExUnit.AssertionError, fn ->
+        %{some_string: 1_000}
+        |> changeset()
+        |> assert_changeset_valid()
+      end
+    end
+  end
+
+  describe "refute_changeset_valid/1" do
+    test "asserts that a changeset's 'valid?' flag is false" do
+      %{some_string: 1_000}
+      |> changeset()
+      |> refute_changeset_valid()
+
+      assert_raise ExUnit.AssertionError, fn ->
+        %{some_string: "Yuju!"}
+        |> changeset()
+        |> refute_changeset_valid()
       end
     end
   end

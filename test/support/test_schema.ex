@@ -4,6 +4,20 @@ defmodule BitcrowdEcto.TestSchema do
   @moduledoc false
 
   use BitcrowdEcto.Schema
+  import Ecto.Changeset
+
+  @attrs [
+    :some_string,
+    :some_integer,
+    :some_boolean,
+    :datetime,
+    :from,
+    :until,
+    :from_dt,
+    :until_dt,
+    :from_number,
+    :to_number
+  ]
 
   schema "test_schema" do
     field(:some_string, :string)
@@ -20,4 +34,6 @@ defmodule BitcrowdEcto.TestSchema do
     belongs_to(:parent, __MODULE__)
     has_many(:children, __MODULE__, foreign_key: :parent_id)
   end
+
+  def changeset(params \\ %{}), do: cast(%__MODULE__{}, params, @attrs)
 end
