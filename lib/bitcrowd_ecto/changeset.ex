@@ -302,9 +302,7 @@ defmodule BitcrowdEcto.Changeset do
     date = get_field(changeset, date_field)
 
     if date do
-      r = Date.compare(date, ref_date)
-
-      if r in [:eq, :gt] do
+      if Date.compare(date, ref_date) in [:eq, :gt] do
         changeset
       else
         formatter = Keyword.get(opts, :formatter, &Date.to_string/1)
