@@ -296,21 +296,14 @@ defmodule BitcrowdEcto.Changeset do
   """
   def validate_date_after(changeset, date_field, ref_date) do
     date = get_field(changeset, date_field)
+    r = Date.compare(date, ref_date)
 
-    case date do
-      %Date{} ->
-        r = Date.compare(date, ref_date)
-
-        if r in [:eq, :gt] do
-          changeset
-        else
-          add_error(changeset, date_field, "must be after or equal #{ref_date}",
-            validation: :date_after
-          )
-        end
-
-      _ ->
-        add_error(changeset, date_field, "expecting value of type Date, got #{date}")
+    if r in [:eq, :gt] do
+      changeset
+    else
+      add_error(changeset, date_field, "must be after or equal #{ref_date}",
+        validation: :date_after
+      )
     end
   end
 end
