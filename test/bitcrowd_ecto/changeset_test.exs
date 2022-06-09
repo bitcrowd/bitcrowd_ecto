@@ -480,9 +480,9 @@ defmodule BitcrowdEcto.ChangesetTest do
       test_cases = [
         %{pattern: "#aaaaaa", valid: true},
         %{pattern: "#AAAAAA", valid: true},
-        %{pattern: "#123456", valid: true}
-        %{pattern: "#zzzzzz", valid: false}
-        %{pattern: "aaaaaa", valid: false}
+        %{pattern: "#123456", valid: true},
+        %{pattern: "#zzzzzz", valid: false},
+        %{pattern: "aaaaaa", valid: false},
         %{pattern: "#", valid: false}
       ]
 
