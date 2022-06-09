@@ -502,7 +502,8 @@ defmodule BitcrowdEcto.ChangesetTest do
       test_cases = [
         %{date_field: ~D[2022-06-01], ref_date: ~D[2022-06-01], valid: true},
         %{date_field: ~D[2022-06-01], ref_date: ~D[2022-05-01], valid: true},
-        %{date_field: ~D[2022-06-01], ref_date: ~D[2022-07-01], valid: false}
+        %{date_field: ~D[2022-06-01], ref_date: ~D[2022-07-01], valid: false},
+        %{date_field: "not a date", ref_date: ~D[2022-01-01], valid: false}
       ]
 
       Enum.each(test_cases, fn test_case ->
