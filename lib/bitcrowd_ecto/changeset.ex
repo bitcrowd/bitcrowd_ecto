@@ -280,4 +280,40 @@ defmodule BitcrowdEcto.Changeset do
       changeset
     end
   end
+
+  @hex_color_regex ~r/^#[0-9A-Fa-f]{6}$/
+
+  @doc """
+  Validates a changeset field with hexadecimal color format
+  """
+  @doc since: "0.11.0"
+  @spec validate_hex_color(Ecto.Changeset.t(), atom) :: Ecto.Changeset.t()
+  def validate_hex_color(changeset, hex_color_field) do
+    validate_format(changeset, hex_color_field, @hex_color_regex)
+  end
+
+  @doc """
+  Validates a date field in the changeset is after the given reference date.
+  """
+  @doc since: "0.11.0"
+  @spec validate_date_after(Ecto.Changeset.t(), atom, Date.t(), [{:formatter, fun}]) ::
+          Ecto.Changeset.t()
+  def validate_date_after(changeset, date_field, ref_date, opts \\ []) do
+    date = get_field(changeset, date_field)
+
+    if date do
+      if Date.compare(date, ref_date) in [:eq, :gt] do
+        changeset
+      else
+        formatter = Keyword.get(opts, :formatter, &Date.to_string/1)
+        reference = formatter.(ref_date)
+
+        add_error(changeset, date_field, "must be after or equal to #{reference}",
+          validation: :date_after
+        )
+      end
+    else
+      changeset
+    end
+  end
 end
