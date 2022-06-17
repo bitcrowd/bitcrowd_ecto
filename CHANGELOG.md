@@ -1,5 +1,11 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
+## Unreleased
+
+### Added
+
+* New `BitcrowdEcto.Tabular` helps with transforming query results into tabular format for rendering it as CSVs.
+
 ## [0.11.0] - 2022-06-09
 
 * Add `BitcrowdEcto.Changeset.validate_date_after/3` Validates a date field in the changeset is after the given reference date.
