@@ -159,7 +159,7 @@ defmodule BitcrowdEcto.DateTime do
   end
 
   @doc """
-  Calculates the beginning of last month, equalizing day length differences due to DST.
+  Calculates the beginning of last month.
 
   ## Behaviour
 
@@ -185,7 +185,7 @@ defmodule BitcrowdEcto.DateTime do
   end
 
   @doc """
-  Calculates the beginning of next month, equalizing day length differences due to DST.
+  Calculates the beginning of next month.
 
   ## Behaviour
 
