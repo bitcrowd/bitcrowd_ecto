@@ -87,6 +87,60 @@ defmodule BitcrowdEcto.DateTime do
   end
 
   @doc """
+  Calculates the beginning of yesterday, equalizing day length differences due to DST.
+
+  ## Behaviour
+
+  Subtracts 0.5d from today's midnight and goes back to midnight. Should be relatively safe.
+
+  ## Examples
+
+      iex> beginning_of_yesterday(~U[2022-04-07 07:21:22.036Z])
+      ~U[2022-04-06 00:00:00.000000Z]
+
+      iex> ~U[2020-03-29 12:00:00.000Z]
+      ...> |> DateTime.shift_zone!("Europe/Berlin")
+      ...> |> beginning_of_yesterday()
+      ...> |> DateTime.to_iso8601()
+      "2020-03-28T00:00:00.000000+01:00"
+  """
+  @doc since: "0.12.0"
+  @spec beginning_of_yesterday(DateTime.t()) :: DateTime.t()
+  def beginning_of_yesterday(datetime) do
+    datetime
+    |> beginning_of_day()
+    |> DateTime.add(-43_200)
+    |> beginning_of_day()
+  end
+
+  @doc """
+  Calculates the beginning of tomorrow, equalizing day length differences due to DST.
+
+  ## Behaviour
+
+  Adds 1.5d to today's midnight and goes back to midnight. Should be relatively safe.
+
+  ## Examples
+
+      iex> beginning_of_tomorrow(~U[2022-04-07 07:21:22.036Z])
+      ~U[2022-04-08 00:00:00.000000Z]
+
+      iex> ~U[2020-03-29 12:00:00.000Z]
+      ...> |> DateTime.shift_zone!("Europe/Berlin")
+      ...> |> beginning_of_tomorrow()
+      ...> |> DateTime.to_iso8601()
+      "2020-03-30T00:00:00.000000+02:00"
+  """
+  @doc since: "0.12.0"
+  @spec beginning_of_tomorrow(DateTime.t()) :: DateTime.t()
+  def beginning_of_tomorrow(datetime) do
+    datetime
+    |> beginning_of_day()
+    |> DateTime.add(129_600)
+    |> beginning_of_day()
+  end
+
+  @doc """
   Works similar to `Timex.beginning_of_day/3`, but way more simple.
 
   ## Behaviour
@@ -102,5 +156,57 @@ defmodule BitcrowdEcto.DateTime do
   @spec beginning_of_month(DateTime.t()) :: DateTime.t()
   def beginning_of_month(datetime) do
     beginning_of_day(%{datetime | day: 1})
+  end
+
+  @doc """
+  Calculates the beginning of last month, equalizing day length differences due to DST.
+
+  ## Behaviour
+
+  Goes to this month's beginning, subtracts 15 days, and goes back to the month's beginning.
+
+  Should be relatively safe.
+
+  ## Examples
+
+      iex> beginning_of_last_month(~U[2022-04-07 07:21:22.036Z])
+      ~U[2022-03-01 00:00:00.000000Z]
+
+      iex> beginning_of_last_month(~U[2022-02-07 07:21:22.036Z])
+      ~U[2022-01-01 00:00:00.000000Z]
+  """
+  @doc since: "0.12.0"
+  @spec beginning_of_last_month(DateTime.t()) :: DateTime.t()
+  def beginning_of_last_month(datetime) do
+    datetime
+    |> beginning_of_month()
+    |> DateTime.add(-1_296_000)
+    |> beginning_of_month()
+  end
+
+  @doc """
+  Calculates the beginning of next month, equalizing day length differences due to DST.
+
+  ## Behaviour
+
+  Goes to this month's beginning, adds 45 days, and goes back to the month's beginning.
+
+  Should be relatively safe.
+
+  ## Examples
+
+      iex> beginning_of_next_month(~U[2022-04-07 07:21:22.036Z])
+      ~U[2022-05-01 00:00:00.000000Z]
+
+      iex> beginning_of_next_month(~U[2022-02-07 07:21:22.036Z])
+      ~U[2022-03-01 00:00:00.000000Z]
+  """
+  @doc since: "0.12.0"
+  @spec beginning_of_next_month(DateTime.t()) :: DateTime.t()
+  def beginning_of_next_month(datetime) do
+    datetime
+    |> beginning_of_month()
+    |> DateTime.add(3_888_000)
+    |> beginning_of_month()
   end
 end

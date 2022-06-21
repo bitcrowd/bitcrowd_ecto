@@ -5,6 +5,10 @@
 ### Added
 
 * Add `BitcrowdEcto.DateTime.beginning_of_month/1`.
+* Add `BitcrowdEcto.DateTime.beginning_of_last_month/1`.
+* Add `BitcrowdEcto.DateTime.beginning_of_next_month/1`.
+* Add `BitcrowdEcto.DateTime.beginning_of_yesterday/1`.
+* Add `BitcrowdEcto.DateTime.beginning_of_tomorrow/1`.
 
 ## [0.11.0] - 2022-06-09
 
