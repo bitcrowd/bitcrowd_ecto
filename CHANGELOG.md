@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
-## Unreleased
+## [0.12.0] - 2022-06-21
 
 ### Added
 
