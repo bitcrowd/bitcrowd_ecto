@@ -73,7 +73,7 @@ defmodule BitcrowdEcto.DateTime do
 
   ## Behaviour
 
-  Nulls the time-field of the `DateTime` and keeps the rest.
+  Nulls the time fields of the `DateTime` and keeps the rest.
 
   ## Examples
 
@@ -84,5 +84,23 @@ defmodule BitcrowdEcto.DateTime do
   @spec beginning_of_day(DateTime.t()) :: DateTime.t()
   def beginning_of_day(datetime) do
     %{datetime | hour: 0, minute: 0, second: 0, microsecond: {0, 6}}
+  end
+
+  @doc """
+  Works similar to `Timex.beginning_of_day/3`, but way more simple.
+
+  ## Behaviour
+
+  Sets `day` to 1 and nulls the time fields.
+
+  ## Examples
+
+      iex> beginning_of_month(~U[2022-04-07 07:21:22.036Z])
+      ~U[2022-04-01 00:00:00.000000Z]
+  """
+  @doc since: "0.12.0"
+  @spec beginning_of_month(DateTime.t()) :: DateTime.t()
+  def beginning_of_month(datetime) do
+    beginning_of_day(%{datetime | day: 1})
   end
 end
