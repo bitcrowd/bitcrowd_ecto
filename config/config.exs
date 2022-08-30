@@ -20,4 +20,10 @@ if config_env() == :test do
   config :logger, level: :info
 
   config :bitcrowd_ecto, BitcrowdEcto.TestRepo, pool: Ecto.Adapters.SQL.Sandbox
+
+  config :ex_cldr,
+    default_backend: BitcrowdEcto.TestCldr,
+    default_locale: "en"
+
+  config :ex_money, default_cldr_backend: BitcrowdEcto.TestCldr
 end

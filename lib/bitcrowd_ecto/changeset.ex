@@ -8,6 +8,7 @@ defmodule BitcrowdEcto.Changeset do
   @moduledoc since: "0.1.0"
 
   import Ecto.Changeset
+  alias Ecto.Changeset
 
   @doc """
   Validates that a field has changed in a defined way.
@@ -21,7 +22,7 @@ defmodule BitcrowdEcto.Changeset do
   has to be present in the list of transitions.
   """
   @doc since: "0.1.0"
-  @spec validate_transition(Ecto.Changeset.t(), atom, [{any, any}]) :: Ecto.Changeset.t()
+  @spec validate_transition(Changeset.t(), atom, [{any, any}]) :: Changeset.t()
   def validate_transition(changeset, field, transitions) do
     from = Map.fetch!(changeset.data, field)
     to = Map.get(changeset.changes, field, from)
@@ -44,7 +45,7 @@ defmodule BitcrowdEcto.Changeset do
   Validates that a field that has been changed.
   """
   @doc since: "0.1.0"
-  @spec validate_changed(Ecto.Changeset.t(), atom) :: Ecto.Changeset.t()
+  @spec validate_changed(Changeset.t(), atom) :: Changeset.t()
   def validate_changed(changeset, field) do
     if Map.has_key?(changeset.changes, field) do
       changeset
@@ -57,7 +58,7 @@ defmodule BitcrowdEcto.Changeset do
   Validates that a field is not changed from its current value, unless the current value is nil.
   """
   @doc since: "0.1.0"
-  @spec validate_immutable(Ecto.Changeset.t(), atom) :: Ecto.Changeset.t()
+  @spec validate_immutable(Changeset.t(), atom) :: Changeset.t()
   def validate_immutable(changeset, field) do
     if is_nil(Map.fetch!(changeset.data, field)) || !Map.has_key?(changeset.changes, field) do
       changeset
@@ -89,7 +90,7 @@ defmodule BitcrowdEcto.Changeset do
   * `:only_web` - requires a dot in the domain part, e.g. `domain.tld`, defaults to true
   """
   @doc since: "0.1.0"
-  @spec validate_email(Ecto.Changeset.t(), atom, [validate_email_option]) :: Ecto.Changeset.t()
+  @spec validate_email(Changeset.t(), atom, [validate_email_option]) :: Changeset.t()
   def validate_email(changeset, field, opts \\ []) do
     max_length = Keyword.get(opts, :max_length, 320)
 
@@ -109,7 +110,7 @@ defmodule BitcrowdEcto.Changeset do
   Validates a field url to be qualified url
   """
   @doc since: "0.1.0"
-  @spec validate_url(Ecto.Changeset.t(), atom) :: Ecto.Changeset.t()
+  @spec validate_url(Changeset.t(), atom) :: Changeset.t()
   def validate_url(changeset, field) do
     get_field(changeset, field) |> do_validate_url(changeset, field)
   end
@@ -130,7 +131,7 @@ defmodule BitcrowdEcto.Changeset do
   Validates a field timestamp to be in the past, if present
   """
   @doc since: "0.6.0"
-  @spec validate_past_datetime(Ecto.Changeset.t(), atom, DateTime.t()) :: Ecto.Changeset.t()
+  @spec validate_past_datetime(Changeset.t(), atom, DateTime.t()) :: Changeset.t()
   def validate_past_datetime(changeset, field, now \\ DateTime.utc_now()) do
     datetime = get_change(changeset, field)
 
@@ -145,7 +146,7 @@ defmodule BitcrowdEcto.Changeset do
   Validates a field timestamp to be in the future, if present
   """
   @doc since: "0.6.0"
-  @spec validate_future_datetime(Ecto.Changeset.t(), atom, DateTime.t()) :: Ecto.Changeset.t()
+  @spec validate_future_datetime(Changeset.t(), atom, DateTime.t()) :: Changeset.t()
   def validate_future_datetime(changeset, field, now \\ DateTime.utc_now()) do
     datetime = get_change(changeset, field)
 
@@ -160,8 +161,8 @@ defmodule BitcrowdEcto.Changeset do
   Validates a field timestamp to be after the given one
   """
   @doc since: "0.6.0"
-  @spec validate_datetime_after(Ecto.Changeset.t(), atom, DateTime.t(), [{:formatter, fun}]) ::
-          Ecto.Changeset.t()
+  @spec validate_datetime_after(Changeset.t(), atom, DateTime.t(), [{:formatter, fun}]) ::
+          Changeset.t()
   def validate_datetime_after(changeset, field, reference_datetime, opts \\ []) do
     formatter = Keyword.get(opts, :formatter, &DateTime.to_string/1)
     datetime = get_change(changeset, field)
@@ -192,11 +193,11 @@ defmodule BitcrowdEcto.Changeset do
       validate_date_order(changeset, :from, :to, [formatter: &Date.day_of_week/1])
   """
   @doc since: "0.6.0"
-  @spec validate_date_order(Ecto.Changeset.t(), atom, atom, [
+  @spec validate_date_order(Changeset.t(), atom, atom, [
           {:formatter, fun},
           {:valid_orders, list(atom)}
         ]) ::
-          Ecto.Changeset.t()
+          Changeset.t()
   def validate_date_order(changeset, from_field, until_field, opts \\ []) do
     formatter = Keyword.get(opts, :formatter, &Date.to_string/1)
     valid_orders = Keyword.get(opts, :valid_orders, [:lt, :eq])
@@ -223,11 +224,11 @@ defmodule BitcrowdEcto.Changeset do
       validate_datetime_order(changeset, :from, :to, [formatter: &DateTime.to_time/1])
   """
   @doc since: "0.6.0"
-  @spec validate_datetime_order(Ecto.Changeset.t(), atom, atom, [
+  @spec validate_datetime_order(Changeset.t(), atom, atom, [
           {:formatter, fun},
           {:valid_orders, list(atom)}
         ]) ::
-          Ecto.Changeset.t()
+          Changeset.t()
   def validate_datetime_order(changeset, from_field, until_field, opts \\ []) do
     formatter = Keyword.get(opts, :formatter, &DateTime.to_string/1)
     valid_orders = Keyword.get(opts, :valid_orders, [:lt, :eq])
@@ -254,12 +255,12 @@ defmodule BitcrowdEcto.Changeset do
       validate_order(changeset, :from, :to, :to_is_after_from, [formatter: &String.length/1])
   """
   @doc since: "0.6.0"
-  @spec validate_order(Ecto.Changeset.t(), atom, atom, atom, [
+  @spec validate_order(Changeset.t(), atom, atom, atom, [
           {:formatter, fun},
           {:compare_fun, fun},
           {:valid_orders, list(atom)}
         ]) ::
-          Ecto.Changeset.t()
+          Changeset.t()
   def validate_order(changeset, from_field, until_field, validation_key, opts \\ []) do
     formatter = Keyword.get(opts, :formatter, &Kernel.to_string/1)
     compare_fun = Keyword.get(opts, :compare_fun, &Kernel.</2)
@@ -287,7 +288,7 @@ defmodule BitcrowdEcto.Changeset do
   Validates a changeset field with hexadecimal color format
   """
   @doc since: "0.11.0"
-  @spec validate_hex_color(Ecto.Changeset.t(), atom) :: Ecto.Changeset.t()
+  @spec validate_hex_color(Changeset.t(), atom) :: Changeset.t()
   def validate_hex_color(changeset, hex_color_field) do
     validate_format(changeset, hex_color_field, @hex_color_regex)
   end
@@ -296,8 +297,8 @@ defmodule BitcrowdEcto.Changeset do
   Validates a date field in the changeset is after the given reference date.
   """
   @doc since: "0.11.0"
-  @spec validate_date_after(Ecto.Changeset.t(), atom, Date.t(), [{:formatter, fun}]) ::
-          Ecto.Changeset.t()
+  @spec validate_date_after(Changeset.t(), atom, Date.t(), [{:formatter, fun}]) ::
+          Changeset.t()
   def validate_date_after(changeset, date_field, ref_date, opts \\ []) do
     date = get_field(changeset, date_field)
 
@@ -315,5 +316,107 @@ defmodule BitcrowdEcto.Changeset do
     else
       changeset
     end
+  end
+
+  @doc "Validates the currency of the given money field"
+  @doc since: "0.13.0"
+  @spec validate_currency(Changeset.t(), atom(), atom()) :: Changeset.t()
+  def validate_currency(changeset, field, required_currency \\ :EUR) do
+    validate_change(
+      changeset,
+      field,
+      :valid_currency,
+      fn _, %Money{currency: currency} ->
+        if currency == required_currency do
+          []
+        else
+          [
+            {field, {"invalid currency", [validation: :validate_currency, fields: [field]]}}
+          ]
+        end
+      end
+    )
+  end
+
+  @doc "Validates amount of money is greater than"
+  @doc since: "0.13.0"
+  @spec validate_more_money(Changeset.t(), atom(), Money.t()) :: Changeset.t()
+  def validate_more_money(changeset, field, money) do
+    validate_change(changeset, field, fn _, value ->
+      if Money.compare(value, money) in [:eq, :lt] do
+        [
+          {field,
+           {"must be greater than %{money}", [money: money, validation: :validate_more_money]}}
+        ]
+      else
+        []
+      end
+    end)
+  end
+
+  @doc "Validates amount of money is greater than or equal"
+  @doc since: "0.13.0"
+  @spec validate_more_or_equal_money(Changeset.t(), atom(), Money.t()) :: Changeset.t()
+  def validate_more_or_equal_money(changeset, field, money) do
+    validate_change(changeset, field, fn _, value ->
+      if Money.compare(value, money) == :lt do
+        [
+          {field,
+           {"must be greather than or equal to %{money}",
+            [money: money, validation: :validate_more_or_equal_money]}}
+        ]
+      else
+        []
+      end
+    end)
+  end
+
+  @doc "Validates amount of money is less than"
+  @doc since: "0.13.0"
+  @spec validate_less_money(Changeset.t(), atom(), Money.t()) :: Changeset.t()
+  def validate_less_money(changeset, field, money) do
+    validate_change(changeset, field, fn _, value ->
+      if Money.compare(value, money) in [:eq, :gt] do
+        [
+          {field,
+           {"must be less than %{money}", [money: money, validation: :validate_less_money]}}
+        ]
+      else
+        []
+      end
+    end)
+  end
+
+  @doc "Validates amount of money is less than or equal"
+  @doc since: "0.13.0"
+  @spec validate_less_or_equal_money(Changeset.t(), atom(), Money.t()) :: Changeset.t()
+  def validate_less_or_equal_money(changeset, field, money) do
+    validate_change(changeset, field, fn _, value ->
+      if Money.compare(value, money) == :gt do
+        [
+          {field,
+           {"must be less than or equal to %{money}",
+            [money: money, validation: :validate_less_or_equal_money]}}
+        ]
+      else
+        []
+      end
+    end)
+  end
+
+  @doc "Validates amount of money is equal"
+  @doc since: "0.13.0"
+  @spec validate_equal_money(Changeset.t(), atom(), Money.t()) :: Changeset.t()
+  def validate_equal_money(changeset, field, money) do
+    validate_change(changeset, field, fn _, value ->
+      if Money.compare(value, money) != :eq do
+        [
+          {field,
+           {"must be equal to %{money}", [money: money, validation: :validate_equal_money]}}
+        ]
+      else
+        []
+      end
+    end)
   end
 end
