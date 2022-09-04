@@ -519,142 +519,163 @@ defmodule BitcrowdEcto.ChangesetTest do
     end
   end
 
-  describe "validate_currency" do
+  describe "validate_money/3 when currency" do
     test "returns a valid changeset" do
       %TestSchema{}
       |> change(%{money: @one_euro})
-      |> validate_currency(:money, :EUR)
+      |> validate_money(:money, currency: :EUR)
       |> assert_changeset_valid()
     end
 
     test "returns an invalid changeset when invalid currency" do
       %TestSchema{}
       |> change(%{money: @one_euro})
-      |> validate_currency(:money, :USD)
+      |> validate_money(:money, currency: :USD)
+      |> assert_error_on(:money, :currency)
       |> refute_changeset_valid()
     end
   end
 
-  describe "validate_more_or_equal_money/3" do
+  describe "validate_money/3 when more_than_or_equal_to" do
     test "returns a valid changeset when equal" do
       %TestSchema{}
       |> change(%{money: @two_euros})
-      |> validate_more_or_equal_money(:money, @two_euros)
+      |> validate_money(:money, more_than_or_equal_to: @two_euros)
       |> assert_changeset_valid()
     end
 
     test "returns a valid changeset when more" do
       %TestSchema{}
       |> change(%{money: @three_euros})
-      |> validate_more_or_equal_money(:money, @two_euros)
+      |> validate_money(:money, more_than_or_equal_to: @two_euros)
       |> assert_changeset_valid()
     end
 
     test "returns an invalid changeset when less" do
       %TestSchema{}
       |> change(%{money: @one_euro})
-      |> validate_more_or_equal_money(:money, @two_euros)
+      |> validate_money(:money, more_than_or_equal_to: @two_euros)
       |> refute_changeset_valid()
-      |> assert_error_on(:money, :validate_more_or_equal_money)
+      |> assert_error_on(:money, :more_than_or_equal_to)
     end
   end
 
-  describe "validate_less_or_equal_money/3" do
+  describe "validate_money/3 when less_than_or_equal_to" do
     test "returns a valid changeset when equal" do
       %TestSchema{}
       |> change(%{money: @two_euros})
-      |> validate_less_or_equal_money(:money, @two_euros)
+      |> validate_money(:money, less_than_or_equal_to: @two_euros)
       |> assert_changeset_valid()
     end
 
     test "returns a valid changeset when less" do
       %TestSchema{}
       |> change(%{money: @one_euro})
-      |> validate_less_or_equal_money(:money, @two_euros)
+      |> validate_money(:money, less_than_or_equal_to: @two_euros)
       |> assert_changeset_valid()
     end
 
     test "returns an invalid changeset when more" do
       %TestSchema{}
       |> change(%{money: @three_euros})
-      |> validate_less_or_equal_money(:money, @two_euros)
+      |> validate_money(:money, less_than_or_equal_to: @two_euros)
       |> refute_changeset_valid()
-      |> assert_error_on(:money, :validate_less_or_equal_money)
+      |> assert_error_on(:money, :less_than_or_equal_to)
     end
   end
 
-  describe "validate_more_money/3" do
+  describe "validate_money/3 when more_than" do
     test "returns a valid changeset when more" do
       %TestSchema{}
       |> change(%{money: @three_euros})
-      |> validate_more_money(:money, @two_euros)
+      |> validate_money(:money, more_than: @two_euros)
       |> assert_changeset_valid()
     end
 
     test "returns an invalid changeset when equal" do
       %TestSchema{}
       |> change(%{money: @two_euros})
-      |> validate_more_money(:money, @two_euros)
+      |> validate_money(:money, more_than: @two_euros)
       |> refute_changeset_valid()
-      |> assert_error_on(:money, :validate_more_money)
+      |> assert_error_on(:money, :more_than)
     end
 
     test "returns an invalid changeset when less" do
       %TestSchema{}
       |> change(%{money: @one_euro})
-      |> validate_more_money(:money, @two_euros)
+      |> validate_money(:money, more_than: @two_euros)
       |> refute_changeset_valid()
-      |> assert_error_on(:money, :validate_more_money)
+      |> assert_error_on(:money, :more_than)
     end
   end
 
-  describe "validate_less_money/3" do
+  describe "validate_money/3 when less_than" do
     test "returns a valid changeset when less" do
       %TestSchema{}
       |> change(%{money: @two_euros})
-      |> validate_less_money(:money, @three_euros)
+      |> validate_money(:money, less_than: @three_euros)
       |> assert_changeset_valid()
     end
 
     test "returns an invalid changeset when equal" do
       %TestSchema{}
       |> change(%{money: @two_euros})
-      |> validate_less_money(:money, @two_euros)
+      |> validate_money(:money, less_than: @two_euros)
       |> refute_changeset_valid()
-      |> assert_error_on(:money, :validate_less_money)
+      |> assert_error_on(:money, :less_than)
     end
 
     test "returns an invalid changeset when more" do
       %TestSchema{}
       |> change(%{money: @three_euros})
-      |> validate_less_money(:money, @two_euros)
+      |> validate_money(:money, less_than: @two_euros)
       |> refute_changeset_valid()
-      |> assert_error_on(:money, :validate_less_money)
+      |> assert_error_on(:money, :less_than)
     end
   end
 
-  describe "validate_equal_money/3" do
+  describe "validate_money/3 when equal_to" do
     test "returns a valid changeset when equal" do
       %TestSchema{}
       |> change(%{money: @two_euros})
-      |> validate_equal_money(:money, @two_euros)
+      |> validate_money(:money, equal_to: @two_euros)
       |> assert_changeset_valid()
     end
 
     test "returns an invalid changeset when less" do
       %TestSchema{}
       |> change(%{money: @two_euros})
-      |> validate_equal_money(:money, @three_euros)
+      |> validate_money(:money, equal_to: @three_euros)
       |> refute_changeset_valid()
-      |> assert_error_on(:money, :validate_equal_money)
+      |> assert_error_on(:money, :equal_to)
     end
 
     test "returns an invalid changeset when more" do
       %TestSchema{}
       |> change(%{money: @three_euros})
-      |> validate_equal_money(:money, @two_euros)
+      |> validate_money(:money, equal_to: @two_euros)
       |> refute_changeset_valid()
-      |> assert_error_on(:money, :validate_equal_money)
+      |> assert_error_on(:money, :equal_to)
+    end
+  end
+
+  describe "validate_money/3 when unknown validator" do
+    test "raises an error" do
+      assert_raise RuntimeError, ~r/Unknown money validator 'almost_equal_to'/, fn ->
+        %TestSchema{}
+        |> change(%{money: @three_euros})
+        |> validate_money(:money, almost_equal_to: @two_euros)
+      end
+    end
+  end
+
+  describe "validate_money/3 when given not Money field" do
+    test "raises an error" do
+      assert_raise RuntimeError, ~r/given field must be Money/, fn ->
+        %TestSchema{}
+        |> change(%{some_integer: 1})
+        |> validate_money(:some_integer, more_than: @two_euros)
+      end
     end
   end
 end

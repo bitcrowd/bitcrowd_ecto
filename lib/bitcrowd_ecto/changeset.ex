@@ -10,6 +10,20 @@ defmodule BitcrowdEcto.Changeset do
   import Ecto.Changeset
   alias Ecto.Changeset
 
+  @type validate_money_option ::
+          {:equal_to | :more_than | :less_than | :more_than_or_equal_to | :less_than_or_equal_to,
+           Money.t()}
+          | {:currency, currency :: atom()}
+
+  @money_validators [
+    :currency,
+    :equal_to,
+    :less_than,
+    :more_than,
+    :less_than_or_equal_to,
+    :more_than_or_equal_to
+  ]
+
   @doc """
   Validates that a field has changed in a defined way.
 
@@ -318,105 +332,82 @@ defmodule BitcrowdEcto.Changeset do
     end
   end
 
-  @doc "Validates the currency of the given money field"
+  @doc "Validates Money according to the given validator"
   @doc since: "0.13.0"
-  @spec validate_currency(Changeset.t(), atom(), atom()) :: Changeset.t()
-  def validate_currency(changeset, field, required_currency \\ :EUR) do
-    validate_change(
-      changeset,
-      field,
-      :valid_currency,
-      fn _, %Money{currency: currency} ->
-        if currency == required_currency do
-          []
-        else
-          [
-            {field, {"invalid currency", [validation: :validate_currency, fields: [field]]}}
-          ]
-        end
-      end
-    )
-  end
+  @spec validate_money(Changeset.t(), atom(), validate_money_option) ::
+          Changeset.t() | no_return()
+  def validate_money(changeset, field, [{validator, target}]) do
+    ensure_money_loaded!()
 
-  @doc "Validates amount of money is greater than"
-  @doc since: "0.13.0"
-  @spec validate_more_money(Changeset.t(), atom(), Money.t()) :: Changeset.t()
-  def validate_more_money(changeset, field, money) do
-    validate_change(changeset, field, fn _, value ->
-      if Money.compare(value, money) in [:eq, :lt] do
-        [
-          {field,
-           {"must be greater than %{money}", [money: money, validation: :validate_more_money]}}
-        ]
-      else
-        []
-      end
+    validate_change(changeset, field, fn
+      _, %Money{} = value -> validate_money(field, value, validator, target)
+      _, _not_money -> raise "given field must be Money"
     end)
   end
 
-  @doc "Validates amount of money is greater than or equal"
-  @doc since: "0.13.0"
-  @spec validate_more_or_equal_money(Changeset.t(), atom(), Money.t()) :: Changeset.t()
-  def validate_more_or_equal_money(changeset, field, money) do
-    validate_change(changeset, field, fn _, value ->
-      if Money.compare(value, money) == :lt do
-        [
-          {field,
-           {"must be greather than or equal to %{money}",
-            [money: money, validation: :validate_more_or_equal_money]}}
-        ]
-      else
-        []
-      end
-    end)
+  defp validate_money(field, value, :equal_to, target) do
+    if Money.compare(value, target) != :eq do
+      [{field, {"must be equal to %{money}", [money: target, validation: :equal_to]}}]
+    else
+      []
+    end
   end
 
-  @doc "Validates amount of money is less than"
-  @doc since: "0.13.0"
-  @spec validate_less_money(Changeset.t(), atom(), Money.t()) :: Changeset.t()
-  def validate_less_money(changeset, field, money) do
-    validate_change(changeset, field, fn _, value ->
-      if Money.compare(value, money) in [:eq, :gt] do
-        [
-          {field,
-           {"must be less than %{money}", [money: money, validation: :validate_less_money]}}
-        ]
-      else
-        []
-      end
-    end)
+  defp validate_money(field, value, :less_than, target) do
+    if Money.compare(value, target) in [:eq, :gt] do
+      [{field, {"must be less than %{money}", [money: target, validation: :less_than]}}]
+    else
+      []
+    end
   end
 
-  @doc "Validates amount of money is less than or equal"
-  @doc since: "0.13.0"
-  @spec validate_less_or_equal_money(Changeset.t(), atom(), Money.t()) :: Changeset.t()
-  def validate_less_or_equal_money(changeset, field, money) do
-    validate_change(changeset, field, fn _, value ->
-      if Money.compare(value, money) == :gt do
-        [
-          {field,
-           {"must be less than or equal to %{money}",
-            [money: money, validation: :validate_less_or_equal_money]}}
-        ]
-      else
-        []
-      end
-    end)
+  defp validate_money(field, value, :more_than, target) do
+    if Money.compare(value, target) in [:eq, :lt] do
+      [{field, {"must be more than %{money}", [money: target, validation: :more_than]}}]
+    else
+      []
+    end
   end
 
-  @doc "Validates amount of money is equal"
-  @doc since: "0.13.0"
-  @spec validate_equal_money(Changeset.t(), atom(), Money.t()) :: Changeset.t()
-  def validate_equal_money(changeset, field, money) do
-    validate_change(changeset, field, fn _, value ->
-      if Money.compare(value, money) != :eq do
-        [
-          {field,
-           {"must be equal to %{money}", [money: money, validation: :validate_equal_money]}}
-        ]
-      else
-        []
-      end
-    end)
+  defp validate_money(field, value, :less_than_or_equal_to, target) do
+    if Money.compare(value, target) == :gt do
+      [
+        {field,
+         {"must be less than or equal to %{money}",
+          [money: target, validation: :less_than_or_equal_to]}}
+      ]
+    else
+      []
+    end
+  end
+
+  defp validate_money(field, value, :more_than_or_equal_to, target) do
+    if Money.compare(value, target) == :lt do
+      [
+        {field,
+         {"must be more than or equal to %{money}",
+          [money: target, validation: :more_than_or_equal_to]}}
+      ]
+    else
+      []
+    end
+  end
+
+  defp validate_money(field, %Money{currency: currency}, :currency, target) do
+    if currency != target do
+      [{field, {"currency must be %{currency}", [currency: target, validation: :currency]}}]
+    else
+      []
+    end
+  end
+
+  defp validate_money(_field, _value, validator, _money) do
+    raise "Unknown money validator '#{validator}'. Existing validators are #{inspect(@money_validators)}."
+  end
+
+  defp ensure_money_loaded! do
+    unless Code.ensure_loaded?(Money) do
+      raise "The 'Money' library is require to use the validator"
+    end
   end
 end

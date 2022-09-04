@@ -73,9 +73,6 @@ defmodule BitcrowdEcto.MixProject do
     [
       {:ecto, "~> 3.6"},
       {:ecto_sql, "~> 3.6"},
-      {:jason, "~> 1.0"},
-      {:ex_cldr, "~> 2.21"},
-      {:ex_money, "~> 5.12"},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.1", only: [:dev, :test], runtime: false},
       {:ex_doc, "> 0.0.0", only: [:dev], runtime: false},
@@ -83,6 +80,8 @@ defmodule BitcrowdEcto.MixProject do
       {:junit_formatter, "~> 3.3", only: [:test]},
       {:postgrex, "> 0.0.0", only: [:dev, :test]},
       {:tzdata, "> 0.0.0", only: [:dev, :test]},
+      {:ex_cldr, "~> 2.21", only: [:dev, :test]},
+      {:ex_money, "~> 5.12", only: [:dev, :test]},
       {:ex_money_sql, "~> 1.7", only: [:dev, :test]}
     ]
   end

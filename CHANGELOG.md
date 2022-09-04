@@ -2,12 +2,7 @@
 
 ## [0.13.0] - Unreleased
 
-* Add `BitcrowdEcto.Changeset.validate_currency/3`.
-* Add `BitcrowdEcto.Changeset.validate_equal_money/3`.
-* Add `BitcrowdEcto.Changeset.validate_more_money/3`.
-* Add `BitcrowdEcto.Changeset.validate_more_or_equal_money/3`.
-* Add `BitcrowdEcto.Changeset.validate_less_money/3`.
-* Add `BitcrowdEcto.Changeset.validate_less_or_equal_money/3`.
+* Add `BitcrowdEcto.Changeset.validate_money/3`.
 
 ## [0.12.0] - 2022-06-21
 
