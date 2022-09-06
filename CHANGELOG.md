@@ -2,7 +2,7 @@
 
 ## [0.13.0] - Unreleased
 
-* Add `BitcrowdEcto.Changeset.validate_money/3`.
+* Add `BitcrowdEcto.Changeset.validate_money/3` for validating `Money` values from `ex_money` & `ex_money_sql`, which are introduced as optional dependencies. 
 
 ## [0.12.0] - 2022-06-21
 
