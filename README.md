@@ -11,6 +11,7 @@ This library contains Bitcrowd's collection of tiny Ecto helpers.
 * `BitcrowdEcto.Migrator` contains a tool for migrating from within releases.
 * `BitcrowdEcto.Migration` contains functions used in migrations.
 * `BitcrowdEcto.Changeset` contains mostly validators.
+  - The `validate_money/3` validator is enabled when you add `ex_money` as a dependency to your project.
 * `BitcrowdEcto.DateTime` contains date/time helpers.
 * `BitcrowdEcto.Assertions` has an assortment of useful ExUnit assertions related to Ecto schemas.
 * `BitcrowdEcto.Random` contains functions that generate random tokens.

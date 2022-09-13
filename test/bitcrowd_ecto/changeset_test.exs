@@ -5,10 +5,6 @@ defmodule BitcrowdEcto.ChangesetTest do
   import BitcrowdEcto.Assertions
   import BitcrowdEcto.Changeset
 
-  @one_euro Money.new(:EUR, 1)
-  @two_euros Money.new(:EUR, 2)
-  @three_euros Money.new(:EUR, 3)
-
   describe "validate_transition/3" do
     defp transition_changeset(from, to, transitions) do
       %TestSchema{some_string: from}
@@ -519,7 +515,11 @@ defmodule BitcrowdEcto.ChangesetTest do
     end
   end
 
-  describe "validate_money/3 when currency" do
+  @one_euro Money.new(:EUR, 1)
+  @two_euros Money.new(:EUR, 2)
+  @three_euros Money.new(:EUR, 3)
+
+  describe "validate_money/3 with :currency kind" do
     test "returns a valid changeset" do
       %TestSchema{}
       |> change(%{money: @one_euro})
@@ -531,12 +531,12 @@ defmodule BitcrowdEcto.ChangesetTest do
       %TestSchema{}
       |> change(%{money: @one_euro})
       |> validate_money(:money, currency: :USD)
-      |> assert_error_on(:money, :currency)
+      |> assert_error_on(:money, :money)
       |> refute_changeset_valid()
     end
   end
 
-  describe "validate_money/3 when more_than_or_equal_to" do
+  describe "validate_money/3 with :more_than_or_equal_to kind" do
     test "returns a valid changeset when equal" do
       %TestSchema{}
       |> change(%{money: @two_euros})
@@ -556,11 +556,11 @@ defmodule BitcrowdEcto.ChangesetTest do
       |> change(%{money: @one_euro})
       |> validate_money(:money, more_than_or_equal_to: @two_euros)
       |> refute_changeset_valid()
-      |> assert_error_on(:money, :more_than_or_equal_to)
+      |> assert_error_on(:money, :money)
     end
   end
 
-  describe "validate_money/3 when less_than_or_equal_to" do
+  describe "validate_money/3 with :less_than_or_equal_to kind" do
     test "returns a valid changeset when equal" do
       %TestSchema{}
       |> change(%{money: @two_euros})
@@ -580,11 +580,11 @@ defmodule BitcrowdEcto.ChangesetTest do
       |> change(%{money: @three_euros})
       |> validate_money(:money, less_than_or_equal_to: @two_euros)
       |> refute_changeset_valid()
-      |> assert_error_on(:money, :less_than_or_equal_to)
+      |> assert_error_on(:money, :money)
     end
   end
 
-  describe "validate_money/3 when more_than" do
+  describe "validate_money/3 with :more_than kind" do
     test "returns a valid changeset when more" do
       %TestSchema{}
       |> change(%{money: @three_euros})
@@ -597,7 +597,7 @@ defmodule BitcrowdEcto.ChangesetTest do
       |> change(%{money: @two_euros})
       |> validate_money(:money, more_than: @two_euros)
       |> refute_changeset_valid()
-      |> assert_error_on(:money, :more_than)
+      |> assert_error_on(:money, :money)
     end
 
     test "returns an invalid changeset when less" do
@@ -605,11 +605,11 @@ defmodule BitcrowdEcto.ChangesetTest do
       |> change(%{money: @one_euro})
       |> validate_money(:money, more_than: @two_euros)
       |> refute_changeset_valid()
-      |> assert_error_on(:money, :more_than)
+      |> assert_error_on(:money, :money)
     end
   end
 
-  describe "validate_money/3 when less_than" do
+  describe "validate_money/3 with :less_than kind" do
     test "returns a valid changeset when less" do
       %TestSchema{}
       |> change(%{money: @two_euros})
@@ -622,7 +622,7 @@ defmodule BitcrowdEcto.ChangesetTest do
       |> change(%{money: @two_euros})
       |> validate_money(:money, less_than: @two_euros)
       |> refute_changeset_valid()
-      |> assert_error_on(:money, :less_than)
+      |> assert_error_on(:money, :money)
     end
 
     test "returns an invalid changeset when more" do
@@ -630,11 +630,11 @@ defmodule BitcrowdEcto.ChangesetTest do
       |> change(%{money: @three_euros})
       |> validate_money(:money, less_than: @two_euros)
       |> refute_changeset_valid()
-      |> assert_error_on(:money, :less_than)
+      |> assert_error_on(:money, :money)
     end
   end
 
-  describe "validate_money/3 when equal_to" do
+  describe "validate_money/3 with :equal_to kind" do
     test "returns a valid changeset when equal" do
       %TestSchema{}
       |> change(%{money: @two_euros})
@@ -647,7 +647,7 @@ defmodule BitcrowdEcto.ChangesetTest do
       |> change(%{money: @two_euros})
       |> validate_money(:money, equal_to: @three_euros)
       |> refute_changeset_valid()
-      |> assert_error_on(:money, :equal_to)
+      |> assert_error_on(:money, :money)
     end
 
     test "returns an invalid changeset when more" do
@@ -655,23 +655,13 @@ defmodule BitcrowdEcto.ChangesetTest do
       |> change(%{money: @three_euros})
       |> validate_money(:money, equal_to: @two_euros)
       |> refute_changeset_valid()
-      |> assert_error_on(:money, :equal_to)
+      |> assert_error_on(:money, :money)
     end
   end
 
-  describe "validate_money/3 when unknown validator" do
+  describe "validate_money/3 when current value is not money" do
     test "raises an error" do
-      assert_raise RuntimeError, ~r/Unknown money validator 'almost_equal_to'/, fn ->
-        %TestSchema{}
-        |> change(%{money: @three_euros})
-        |> validate_money(:money, almost_equal_to: @two_euros)
-      end
-    end
-  end
-
-  describe "validate_money/3 when given not Money field" do
-    test "raises an error" do
-      assert_raise RuntimeError, ~r/given field must be Money/, fn ->
+      assert_raise FunctionClauseError, fn ->
         %TestSchema{}
         |> change(%{some_integer: 1})
         |> validate_money(:some_integer, more_than: @two_euros)

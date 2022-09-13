@@ -10,20 +10,6 @@ defmodule BitcrowdEcto.Changeset do
   import Ecto.Changeset
   alias Ecto.Changeset
 
-  @type validate_money_option ::
-          {:equal_to | :more_than | :less_than | :more_than_or_equal_to | :less_than_or_equal_to,
-           Money.t()}
-          | {:currency, currency :: atom()}
-
-  @money_validators [
-    :currency,
-    :equal_to,
-    :less_than,
-    :more_than,
-    :less_than_or_equal_to,
-    :more_than_or_equal_to
-  ]
-
   @doc """
   Validates that a field has changed in a defined way.
 
@@ -332,82 +318,111 @@ defmodule BitcrowdEcto.Changeset do
     end
   end
 
-  @doc "Validates Money according to the given validator"
-  @doc since: "0.13.0"
-  @spec validate_money(Changeset.t(), atom(), validate_money_option) ::
-          Changeset.t() | no_return()
-  def validate_money(changeset, field, [{validator, target}]) do
-    ensure_money_loaded!()
+  if Code.ensure_loaded?(Money) do
+    @type validate_money_option ::
+            {:equal_to, Money.t()}
+            | {:more_than, Money.t()}
+            | {:less_than, Money.t()}
+            | {:more_than_or_equal_to, Money.t()}
+            | {:less_than_or_equal_to, Money.t()}
+            | {:currency, atom}
 
-    validate_change(changeset, field, fn
-      _, %Money{} = value -> validate_money(field, value, validator, target)
-      _, _not_money -> raise "given field must be Money"
-    end)
-  end
+    @money_validations [
+      :equal_to,
+      :more_than,
+      :less_than,
+      :more_than_or_equal_to,
+      :less_than_or_equal_to,
+      :currency
+    ]
 
-  defp validate_money(field, value, :equal_to, target) do
-    if Money.compare(value, target) != :eq do
-      [{field, {"must be equal to %{money}", [money: target, validation: :equal_to]}}]
-    else
-      []
+    @doc """
+    Validates a `t:Money.t` value according to the given options.
+
+    ## Examples
+
+        validate_money(changeset, :amount, less_than: Money.new("100.00", :USD))
+        validate_money(changeset, :amount, greater_than_or_equal_to: Money.new("100.00", :USD))
+        validate_money(changeset, :amount, currency: :USD)
+    """
+    @doc since: "0.13.0"
+    @spec validate_money(Changeset.t(), atom(), [validate_money_option]) ::
+            Changeset.t() | no_return()
+    def validate_money(changeset, field, opts) do
+      validate_change(changeset, field, fn _, %Money{} = value ->
+        opts
+        |> Keyword.take(@money_validations)
+        |> Enum.flat_map(&do_validate_money(field, value, &1))
+      end)
     end
-  end
 
-  defp validate_money(field, value, :less_than, target) do
-    if Money.compare(value, target) in [:eq, :gt] do
-      [{field, {"must be less than %{money}", [money: target, validation: :less_than]}}]
-    else
-      []
+    defp do_validate_money(field, value, {:equal_to, target}) do
+      if Money.compare(value, target) != :eq do
+        [
+          {field,
+           {"must be equal to %{money}", [money: target, validation: :money, kind: :equal_to]}}
+        ]
+      else
+        []
+      end
     end
-  end
 
-  defp validate_money(field, value, :more_than, target) do
-    if Money.compare(value, target) in [:eq, :lt] do
-      [{field, {"must be more than %{money}", [money: target, validation: :more_than]}}]
-    else
-      []
+    defp do_validate_money(field, value, {:less_than, target}) do
+      if Money.compare(value, target) in [:eq, :gt] do
+        [
+          {field,
+           {"must be less than %{money}", [money: target, validation: :money, kind: :less_than]}}
+        ]
+      else
+        []
+      end
     end
-  end
 
-  defp validate_money(field, value, :less_than_or_equal_to, target) do
-    if Money.compare(value, target) == :gt do
-      [
-        {field,
-         {"must be less than or equal to %{money}",
-          [money: target, validation: :less_than_or_equal_to]}}
-      ]
-    else
-      []
+    defp do_validate_money(field, value, {:more_than, target}) do
+      if Money.compare(value, target) in [:eq, :lt] do
+        [
+          {field,
+           {"must be more than %{money}", [money: target, validation: :money, kind: :more_than]}}
+        ]
+      else
+        []
+      end
     end
-  end
 
-  defp validate_money(field, value, :more_than_or_equal_to, target) do
-    if Money.compare(value, target) == :lt do
-      [
-        {field,
-         {"must be more than or equal to %{money}",
-          [money: target, validation: :more_than_or_equal_to]}}
-      ]
-    else
-      []
+    defp do_validate_money(field, value, {:less_than_or_equal_to, target}) do
+      if Money.compare(value, target) == :gt do
+        [
+          {field,
+           {"must be less than or equal to %{money}",
+            [money: target, validation: :money, kind: :less_than_or_equal_to]}}
+        ]
+      else
+        []
+      end
     end
-  end
 
-  defp validate_money(field, %Money{currency: currency}, :currency, target) do
-    if currency != target do
-      [{field, {"currency must be %{currency}", [currency: target, validation: :currency]}}]
-    else
-      []
+    defp do_validate_money(field, value, {:more_than_or_equal_to, target}) do
+      if Money.compare(value, target) == :lt do
+        [
+          {field,
+           {"must be more than or equal to %{money}",
+            [money: target, validation: :money, kind: :more_than_or_equal_to]}}
+        ]
+      else
+        []
+      end
     end
-  end
 
-  defp validate_money(_field, _value, validator, _money) do
-    raise "Unknown money validator '#{validator}'. Existing validators are #{inspect(@money_validators)}."
-  end
-
-  defp ensure_money_loaded! do
-    unless Code.ensure_loaded?(Money) do
-      raise "The 'Money' library is require to use the validator"
+    defp do_validate_money(field, value, {:currency, target}) do
+      if value.currency != target do
+        [
+          {field,
+           {"currency must be %{currency}",
+            [currency: target, validation: :money, kind: :currency]}}
+        ]
+      else
+        []
+      end
     end
   end
 end
