@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 defmodule BitcrowdEcto.TestRepo.Migrations.AddMoreFieldsToTestSchema do
   use Ecto.Migration
 

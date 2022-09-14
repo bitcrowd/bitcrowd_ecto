@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 defmodule BitcrowdEcto.DateTime do
   @moduledoc """
   Functions to work with date and time values.
