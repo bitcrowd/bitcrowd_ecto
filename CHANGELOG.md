@@ -1,6 +1,14 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
+## [0.13.1] - 2022-09-14
+
+### Fixed
+
+* Fix dependency specifications by restoring the `:only` options and explicitly listing conflicting packages. See https://github.com/kipcole9/money/issues/142 for explanation.
+
 ## [0.13.0] - 2022-09-14
+
+NOTE: 0.13.0 needed to be retired due to a corrupt dependency tree listing all dev/test dependencies as prod dependencies.
 
 * Add `BitcrowdEcto.Changeset.validate_money/3` for validating `Money` values from `ex_money`, which is introduced as an optional dependency.
 
