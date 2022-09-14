@@ -12,7 +12,7 @@ defmodule BitcrowdEcto.MixProject do
       elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps(),
+      deps: deps(Mix.env()),
       dialyzer: dialyzer(),
       elixirc_paths: elixirc_paths(Mix.env()),
       preferred_cli_env: [lint: :test],
@@ -69,22 +69,37 @@ defmodule BitcrowdEcto.MixProject do
     ]
   end
 
-  defp deps do
+  defp required_deps do
     [
       {:ecto, "~> 3.6"},
-      {:ecto_sql, "~> 3.6"},
-      {:ex_money, "~> 5.12", only: [:dev, :test], optional: true},
-      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.1", only: [:dev, :test], runtime: false},
-      {:ex_doc, "> 0.0.0", only: [:dev], runtime: false},
-      {:ex_machina, "~> 2.7", only: [:dev, :test]},
-      {:junit_formatter, "~> 3.3", only: [:test]},
-      {:postgrex, "> 0.0.0", only: [:dev, :test]},
-      {:tzdata, "> 0.0.0", only: [:dev, :test]},
-      {:ex_cldr, "~> 2.33", only: [:dev, :test]},
-      # https://github.com/kipcole9/money/issues/142
-      {:ex_money_sql, "~> 1.7", only: [:dev, :test], override: true}
+      {:ecto_sql, "~> 3.6"}
     ]
+  end
+
+  defp optional_deps do
+    [
+      {:ex_money, "~> 5.12", optional: true}
+    ]
+  end
+
+  defp deps(:prod) do
+    required_deps() ++ optional_deps()
+  end
+
+  defp deps(_) do
+    required_deps() ++
+      [
+        {:ex_money, "~> 5.12"},
+        {:ex_money_sql, "~> 1.7"},
+        {:credo, "~> 1.6", runtime: false},
+        {:dialyxir, "~> 1.1", runtime: false},
+        {:ex_doc, "> 0.0.0", runtime: false},
+        {:ex_machina, "~> 2.7"},
+        {:junit_formatter, "~> 3.3"},
+        {:postgrex, "> 0.0.0"},
+        {:tzdata, "> 0.0.0"},
+        {:ex_cldr, "~> 2.33"}
+      ]
   end
 
   defp dialyzer do
