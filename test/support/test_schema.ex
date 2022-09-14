@@ -16,7 +16,8 @@ defmodule BitcrowdEcto.TestSchema do
     :from_dt,
     :until_dt,
     :from_number,
-    :to_number
+    :to_number,
+    :money
   ]
 
   schema "test_schema" do
@@ -30,6 +31,7 @@ defmodule BitcrowdEcto.TestSchema do
     field(:until_dt, :utc_datetime_usec)
     field(:from_number, :integer)
     field(:to_number, :integer)
+    field(:money, Money.Ecto.Composite.Type, default_currency: :EUR)
 
     belongs_to(:parent, __MODULE__)
     has_many(:children, __MODULE__, foreign_key: :parent_id)

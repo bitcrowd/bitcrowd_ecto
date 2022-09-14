@@ -1,5 +1,9 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
+## [0.13.0] - Unreleased
+
+* Add `BitcrowdEcto.Changeset.validate_money/3` for validating `Money` values from `ex_money`, which is introduced as optional dependency.
+
 ## [0.12.0] - 2022-06-21
 
 ### Added
