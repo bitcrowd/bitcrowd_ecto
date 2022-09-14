@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 defmodule BitcrowdEcto.SchemaTest do
   use ExUnit.Case, async: true
   import BitcrowdEcto.Schema
