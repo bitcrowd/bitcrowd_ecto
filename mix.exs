@@ -12,7 +12,7 @@ defmodule BitcrowdEcto.MixProject do
       elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps(Mix.env()),
+      deps: deps(),
       dialyzer: dialyzer(),
       elixirc_paths: elixirc_paths(Mix.env()),
       preferred_cli_env: [lint: :test],
@@ -69,37 +69,29 @@ defmodule BitcrowdEcto.MixProject do
     ]
   end
 
-  defp required_deps do
-    [
-      {:ecto, "~> 3.6"},
-      {:ecto_sql, "~> 3.6"}
-    ]
-  end
-
-  defp optional_deps do
-    [
-      {:ex_money, "~> 5.12", optional: true}
-    ]
-  end
-
-  defp deps(:prod) do
-    required_deps() ++ optional_deps()
-  end
-
-  defp deps(_) do
-    required_deps() ++
+  defp deps do
+    if Mix.env() == :prod || hex_build?() do
       [
+        {:ecto, "~> 3.6"},
+        {:ecto_sql, "~> 3.6"},
+        {:ex_money, "~> 5.12", optional: true}
+      ]
+    else
+      [
+        {:ecto, "~> 3.6"},
+        {:ecto_sql, "~> 3.6"},
         {:ex_money, "~> 5.12"},
-        {:ex_money_sql, "~> 1.7"},
         {:credo, "~> 1.6", runtime: false},
         {:dialyxir, "~> 1.1", runtime: false},
+        {:ex_cldr, "~> 2.33"},
         {:ex_doc, "> 0.0.0", runtime: false},
+        {:ex_money_sql, "~> 1.7"},
         {:ex_machina, "~> 2.7"},
         {:junit_formatter, "~> 3.3"},
         {:postgrex, "> 0.0.0"},
-        {:tzdata, "> 0.0.0"},
-        {:ex_cldr, "~> 2.33"}
+        {:tzdata, "> 0.0.0"}
       ]
+    end
   end
 
   defp dialyzer do
@@ -112,4 +104,8 @@ defmodule BitcrowdEcto.MixProject do
 
   defp elixirc_paths(env) when env in [:dev, :test], do: ["lib", "test/support"]
   defp elixirc_paths(_env), do: ["lib"]
+
+  defp hex_build? do
+    Enum.any?(~w(hex.build hex.publish), &(&1 in System.argv()))
+  end
 end
