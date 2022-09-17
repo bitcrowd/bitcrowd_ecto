@@ -3,5 +3,5 @@
 defmodule BitcrowdEcto.TestCldr do
   @moduledoc false
 
-  use Cldr, locales: ["en"], providers: [Cldr.Number]
+  use Cldr, locales: ["en"], providers: [Cldr.Number], generate_docs: false
 end
