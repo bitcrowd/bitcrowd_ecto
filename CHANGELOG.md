@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
-## [0.13.1] - 2022-09-14
+## [0.13.1] - 2022-09-21
 
 ### Fixed
 
