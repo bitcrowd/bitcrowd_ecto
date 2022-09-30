@@ -32,7 +32,7 @@ defmodule BitcrowdEcto.RepoTest do
     end
   end
 
-  describe "fetch_by/2" do
+  describe "fetch_by/3" do
     setup [:insert_test_schema]
 
     test "fetches a record by clauses and wraps it into an ok tuple", %{resource: resource} do
@@ -53,6 +53,12 @@ defmodule BitcrowdEcto.RepoTest do
       assert TestRepo.fetch_by(TestSchema, [id: id], lock: :no_key_update) == {:ok, resource}
     end
 
+    test "returns the given error tag instead of the queryable" do
+      query = Ecto.Query.from(x in TestSchema, where: x.id == ^Ecto.UUID.generate())
+      assert TestRepo.fetch_by(query, []) == {:error, {:not_found, query}}
+      assert TestRepo.fetch_by(query, [], error_tag: :foo) == {:error, {:not_found, :foo}}
+    end
+
     test "raises an exception on unknown lock mode", %{resource: %{id: id}} do
       assert_raise RuntimeError, ~r/unknown lock mode/, fn ->
         TestRepo.fetch_by(TestSchema, [id: id], lock: :foo)
@@ -60,7 +66,7 @@ defmodule BitcrowdEcto.RepoTest do
     end
   end
 
-  describe "fetch_by/2 when the resource does not exist" do
+  describe "fetch_by/3 when the resource does not exist" do
     test "returns a tagged not found error" do
       assert TestRepo.fetch_by(TestSchema, id: Ecto.UUID.generate()) ==
                {:error, {:not_found, TestSchema}}

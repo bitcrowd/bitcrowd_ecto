@@ -18,8 +18,9 @@ defmodule BitcrowdEcto.Repo do
   import Ecto.Query, only: [from: 2, lock: 2, preload: 2, where: 3]
   alias Ecto.Adapters.SQL
 
-  @type fetch_option :: {:lock, :no_key_update | :update | false} | {:preload, atom | list}
-  @type fetch_result :: {:ok, Ecto.Schema.t()} | {:error, {:not_found, Ecto.Queryable.t()}}
+  @type fetch_option ::
+          {:lock, :no_key_update | :update | false} | {:preload, atom | list} | {:error_tag, any}
+  @type fetch_result :: {:ok, Ecto.Schema.t()} | {:error, {:not_found, Ecto.Queryable.t() | any}}
   @type lock_mode :: :no_key_update | :update
 
   @doc """
@@ -145,7 +146,7 @@ defmodule BitcrowdEcto.Repo do
     |> maybe_apply_lock(opts)
     |> maybe_preload(opts)
     |> repo.one()
-    |> ok_tuple_or_not_found_error(queryable)
+    |> ok_tuple_or_not_found_error(Keyword.get(opts, :error_tag, queryable))
   end
 
   defp maybe_apply_lock(queryable, opts) do

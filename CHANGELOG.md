@@ -1,5 +1,11 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
+## Unreleased
+
+### Added
+
+* Add `error_tag` option to `BitcrowdEcto.Repo.fetch_by/3` and friends to allow overriding the queryable in the error result.
+
 ## [0.13.1] - 2022-09-21
 
 ### Fixed
