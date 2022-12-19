@@ -1,0 +1,81 @@
+name: Github Actions CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  build:
+    # Containers must run in Linux based operating systems
+    runs-on: ubuntu-20.04
+    name: Build and test
+    env:
+      MIX_ENV: test
+
+    strategy:
+      matrix:
+        otp: ['23.1.1']
+        elixir: ['1.12.2']
+        
+    services:
+      postgres:
+        image: postgres:13-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: bitcrowd_ecto_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Check out repository code
+      uses: actions/checkout@v3
+
+    - name: Set up Elixir
+      uses: erlef/setup-beam@v1
+      with:
+        otp-version: ${{matrix.otp}}
+        elixir-version: ${{matrix.elixir}}
+        version-type: 'strict'
+
+    - run: mix local.hex --force
+    - run: mix local.rebar --force
+
+    - name: Restore dependencies cache
+      uses: actions/cache@v3
+      with:
+        path: deps
+        key: v1-mix-${{ runner.os }}-${{ hashFiles('**/mix.lock') }}
+        restore-keys: v1-mix-${{ runner.os }}
+
+    - name: Restore build cache
+      uses: actions/cache@v3
+      with:
+        path: _build
+        key: v1-build-${{ runner.os }}-${{ hashFiles('**/mix.lock') }}
+        restore-keys: v1-build-${{ runner.os }}
+
+    - name: Install dependencies
+      run: mix do deps.get, compile
+
+    - name: Restore plts cache
+      uses: actions/cache@v3
+      with:
+        path: _plts
+        key: v1-plt-${{ runner.os }}-${{ hashFiles('**/mix.lock') }}
+        restore-keys: v1-plt-${{ runner.os }}
+
+    - name: Linter
+      run: mix lint
+
+    - name: Init DB
+      run: mix do ecto.create, ecto.migrate
+    
+    - name: Run tests
+      run: mix test
