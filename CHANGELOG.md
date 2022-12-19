@@ -4,6 +4,8 @@
 
 ### Added
 
+## [0.13.2] - 2022-12-19
+
 * Add `error_tag` option to `BitcrowdEcto.Repo.fetch_by/3` and friends to allow overriding the queryable in the error result.
 
 ## [0.13.1] - 2022-09-21
