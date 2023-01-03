@@ -20,8 +20,31 @@ defmodule BitcrowdEcto.RepoTest do
   describe "fetch/2" do
     setup [:insert_test_schema]
 
-    test "fetches a record by id and wraps it into an ok tuple", %{resource: resource} do
+    test "fetches a record by primary key and wraps it into an ok tuple", %{resource: resource} do
       assert TestRepo.fetch(TestSchema, resource.id) == {:ok, resource}
+    end
+
+    test "fetches a record by primary key when primary key is not 'id'" do
+      %{name: name} = insert(:alternative_primary_key_test_schema)
+
+      assert {:ok, %AlternativePrimaryKeyTestSchema{name: ^name}} = TestRepo.fetch(AlternativePrimaryKeyTestSchema, name)
+    end
+
+    test "raises when the schema as multiple primary keys" do
+      defmodule TwoPrimaryKeyTestSchema do
+        @moduledoc false
+        use BitcrowdEcto.Schema
+        @primary_key false
+
+        schema "two_primary_key_test_schema" do
+          field :a, :string, primary_key: true
+          field :b, :string, primary_key: true
+        end
+      end
+
+      assert_raise ArgumentError, ~r"exactly one primary key", fn ->
+        TestRepo.fetch(TwoPrimaryKeyTestSchema, "abc")
+      end
     end
   end
 

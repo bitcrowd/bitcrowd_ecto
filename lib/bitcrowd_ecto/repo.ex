@@ -24,20 +24,20 @@ defmodule BitcrowdEcto.Repo do
   @type lock_mode :: :no_key_update | :update
 
   @doc """
-  Fetches a record by ID or returns a "tagged" error tuple.
+  Fetches a record by primary key or returns a "tagged" error tuple.
 
   See `c:fetch/2`.
   """
   @doc since: "0.1.0"
-  @callback fetch(schema :: module, id :: binary) :: fetch_result()
+  @callback fetch(schema :: module, id :: any) :: fetch_result()
 
   @doc """
-  Fetches a record by ID or returns a "tagged" error tuple.
+  Fetches a record by primary key or returns a "tagged" error tuple.
 
   See `c:fetch_by/3` for options.
   """
   @doc since: "0.1.0"
-  @callback fetch(schema :: module, id :: binary, [fetch_option()]) :: fetch_result()
+  @callback fetch(schema :: module, id :: any, [fetch_option()]) :: fetch_result()
 
   @doc """
   Fetches a record by given clauses or returns the result wrapped in an ok tuple.
@@ -133,9 +133,17 @@ defmodule BitcrowdEcto.Repo do
   end
 
   @doc false
-  @spec fetch(module, module, binary, keyword) :: fetch_result
-  def fetch(repo, module, id, opts) when is_atom(module) and is_binary(id) do
-    repo.fetch_by(module, [id: id], opts)
+  @spec fetch(module, module, any, keyword) :: fetch_result
+  def fetch(repo, module, id, opts) when is_atom(module) do
+     case module.__schema__(:primary_key) do
+      [pk] ->
+         repo.fetch_by(module, [{pk, id}], opts)
+
+      pks ->
+        raise ArgumentError,
+              "BitcrowdEcto.Repo.fetch/4 requires the schema #{inspect(module)} " <>
+                "to have exactly one primary key, got: #{inspect(pks)}"
+    end
   end
 
   @doc false

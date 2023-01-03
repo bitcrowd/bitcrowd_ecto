@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Changed Repo.fetch/2 and Repo.fetch/3 to work with non-standard primary_keys
+
 ### Added
 
 ## [0.13.2] - 2022-12-19
