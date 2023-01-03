@@ -11,4 +11,10 @@ defmodule BitcrowdEcto.Factory do
       some_integer: 2021
     }
   end
+
+  def alternative_primary_key_test_schema_factory do
+    %BitcrowdEcto.AlternativePrimaryKeyTestSchema{
+      name: sequence("name")
+    }
+  end
 end
