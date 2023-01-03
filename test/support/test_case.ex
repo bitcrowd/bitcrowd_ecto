@@ -14,7 +14,7 @@ defmodule BitcrowdEcto.TestCase do
       import Ecto.Query
       import BitcrowdEcto.Factory
       import BitcrowdEcto.TestCase
-      alias BitcrowdEcto.{TestRepo, TestSchema, AlternativePrimaryKeyTestSchema}
+      alias BitcrowdEcto.{AlternativePrimaryKeyTestSchema, TestRepo, TestSchema}
     end
   end
 

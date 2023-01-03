@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-* Changed Repo.fetch/2 and Repo.fetch/3 to work with non-standard primary_keys
-
 ### Added
+
+* Changed `Repo.fetch/2` and `Repo.fetch/3` to work with primary key with name other than `id`.
 
 ## [0.13.2] - 2022-12-19
 

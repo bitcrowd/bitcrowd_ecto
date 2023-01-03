@@ -135,9 +135,9 @@ defmodule BitcrowdEcto.Repo do
   @doc false
   @spec fetch(module, module, any, keyword) :: fetch_result
   def fetch(repo, module, id, opts) when is_atom(module) do
-     case module.__schema__(:primary_key) do
+    case module.__schema__(:primary_key) do
       [pk] ->
-         repo.fetch_by(module, [{pk, id}], opts)
+        repo.fetch_by(module, [{pk, id}], opts)
 
       pks ->
         raise ArgumentError,

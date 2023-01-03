@@ -23,11 +23,14 @@ defmodule BitcrowdEcto.RepoTest do
     test "fetches a record by primary key and wraps it into an ok tuple", %{resource: resource} do
       assert TestRepo.fetch(TestSchema, resource.id) == {:ok, resource}
     end
+  end
 
+  describe "fetch/2 with schemas with non-standard primary key" do
     test "fetches a record by primary key when primary key is not 'id'" do
       %{name: name} = insert(:alternative_primary_key_test_schema)
 
-      assert {:ok, %AlternativePrimaryKeyTestSchema{name: ^name}} = TestRepo.fetch(AlternativePrimaryKeyTestSchema, name)
+      assert {:ok, %AlternativePrimaryKeyTestSchema{name: ^name}} =
+               TestRepo.fetch(AlternativePrimaryKeyTestSchema, name)
     end
 
     test "raises when the schema as multiple primary keys" do
@@ -37,8 +40,8 @@ defmodule BitcrowdEcto.RepoTest do
         @primary_key false
 
         schema "two_primary_key_test_schema" do
-          field :a, :string, primary_key: true
-          field :b, :string, primary_key: true
+          field(:a, :string, primary_key: true)
+          field(:b, :string, primary_key: true)
         end
       end
 
