@@ -8,7 +8,7 @@ defmodule BitcrowdEcto.RepoTest do
     %{resource: insert(:test_schema)}
   end
 
-  describe "count/1" do
+  describe "count/2" do
     setup [:insert_test_schema]
 
     test "it gives the count of the given queryable" do

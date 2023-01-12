@@ -15,7 +15,7 @@ defmodule BitcrowdEcto.Repo do
 
   @moduledoc since: "0.1.0"
 
-  import Ecto.Query, only: [from: 2, lock: 2, preload: 2, where: 3]
+  import Ecto.Query, only: [lock: 2, preload: 2, where: 3]
   alias Ecto.Adapters.SQL
 
   @type fetch_option ::
@@ -121,8 +121,8 @@ defmodule BitcrowdEcto.Repo do
       end
 
       @impl BER
-      def count(queryable) do
-        BER.count(__MODULE__, queryable)
+      def count(queryable, opts \\ []) do
+        BER.count(__MODULE__, queryable, opts)
       end
 
       @impl BER
@@ -153,7 +153,7 @@ defmodule BitcrowdEcto.Repo do
     |> where([], ^Enum.to_list(clauses))
     |> maybe_apply_lock(opts)
     |> maybe_preload(opts)
-    |> repo.one()
+    |> repo.one(opts)
     |> ok_tuple_or_not_found_error(Keyword.get(opts, :error_tag, queryable))
   end
 
@@ -185,11 +185,9 @@ defmodule BitcrowdEcto.Repo do
   defp ok_tuple_or_not_found_error(value, _error_tag), do: {:ok, value}
 
   @doc false
-  @spec count(module, Ecto.Queryable.t()) :: non_neg_integer
-  def count(repo, queryable) do
-    queryable
-    |> from(select: count())
-    |> repo.one!()
+  @spec count(module, Ecto.Queryable.t(), keyword) :: non_neg_integer
+  def count(repo, queryable, opts) do
+    repo.aggregate(queryable, :count, opts)
   end
 
   @doc false
