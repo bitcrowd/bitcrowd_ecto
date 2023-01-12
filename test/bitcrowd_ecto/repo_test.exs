@@ -8,12 +8,26 @@ defmodule BitcrowdEcto.RepoTest do
     %{resource: insert(:test_schema)}
   end
 
+  defp insert_test_schema_with_prefix(_) do
+    prefix = :foo
+    %{resource: insert(:test_schema, [], prefix: prefix), prefix: prefix}
+  end
+
   describe "count/1" do
     setup [:insert_test_schema]
 
     test "it gives the count of the given queryable" do
       assert TestRepo.count(TestSchema) == 1
       assert TestRepo.count(from(x in TestSchema, where: is_nil(x.id))) == 0
+    end
+  end
+
+  describe "count/2" do
+    setup [:insert_test_schema_with_prefix]
+
+    test "it gives the count of the given queryable using a prefix option", %{prefix: prefix} do
+      assert TestRepo.count(TestSchema) == 0
+      assert TestRepo.count(TestSchema, prefix: prefix) == 1
     end
   end
 
@@ -58,6 +72,15 @@ defmodule BitcrowdEcto.RepoTest do
     end
   end
 
+  describe "fetch/3" do
+    setup [:insert_test_schema_with_prefix]
+
+    test "returns the record using the prefix option", %{resource: resource, prefix: prefix} do
+      assert TestRepo.fetch(TestSchema, resource.id) == {:error, {:not_found, TestSchema}}
+      assert TestRepo.fetch(TestSchema, resource.id, prefix: prefix) == {:ok, resource}
+    end
+  end
+
   describe "fetch_by/3" do
     setup [:insert_test_schema]
 
@@ -96,6 +119,20 @@ defmodule BitcrowdEcto.RepoTest do
     test "returns a tagged not found error" do
       assert TestRepo.fetch_by(TestSchema, id: Ecto.UUID.generate()) ==
                {:error, {:not_found, TestSchema}}
+    end
+  end
+
+  describe "fetch_by/3 accepts ecto options" do
+    setup [:insert_test_schema_with_prefix]
+
+    test "fetches a record by clauses and wraps it into an ok tuple", %{
+      resource: resource,
+      prefix: prefix
+    } do
+      assert TestRepo.fetch_by(TestSchema, id: resource.id) ==
+               {:error, {:not_found, TestSchema}}
+
+      assert TestRepo.fetch_by(TestSchema, [id: resource.id], prefix: prefix) == {:ok, resource}
     end
   end
 end

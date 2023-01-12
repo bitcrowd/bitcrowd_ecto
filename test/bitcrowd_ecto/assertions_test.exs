@@ -348,7 +348,7 @@ defmodule BitcrowdEcto.AssertionsTest do
     end
   end
 
-  describe "assert_count_difference/4" do
+  describe "assert_count_difference/5" do
     test "asserts that a given function changes the count of a given database table" do
       assert_count_difference(TestRepo, TestSchema, 1, fn ->
         insert(:test_schema)
@@ -360,6 +360,20 @@ defmodule BitcrowdEcto.AssertionsTest do
           insert(:test_schema)
         end)
       end
+    end
+
+    test "accepts prefix option" do
+      prefix = "foo"
+
+      assert_count_difference(
+        TestRepo,
+        TestSchema,
+        2,
+        fn ->
+          insert_pair(:test_schema, [], prefix: prefix)
+        end,
+        prefix: prefix
+      )
     end
   end
 
@@ -375,6 +389,19 @@ defmodule BitcrowdEcto.AssertionsTest do
           insert(:test_schema)
         end)
       end
+    end
+
+    test "accepts prefix option" do
+      prefix = "foo"
+
+      assert_count_differences(
+        TestRepo,
+        [{TestSchema, 2}],
+        fn ->
+          insert_pair(:test_schema, [], prefix: prefix)
+        end,
+        prefix: prefix
+      )
     end
   end
 
