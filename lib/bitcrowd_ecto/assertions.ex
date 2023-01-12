@@ -323,10 +323,10 @@ defmodule BitcrowdEcto.Assertions do
       end
   """
   @doc since: "0.1.0"
-  @spec assert_count_difference(Ecto.Repo.t(), module, integer, (() -> any)) ::
+  @spec assert_count_difference(Ecto.Repo.t(), module, integer, (() -> any), keyword) ::
           Changeset.t() | no_return
-  def assert_count_difference(repo, schema, by, how) do
-    assert_difference(fn -> repo.count(schema) end, by, how,
+  def assert_count_difference(repo, schema, by, how, opts \\ []) when is_integer(by) do
+    assert_difference(fn -> repo.count(schema, opts) end, by, how,
       message: "#{inspect(schema)} hasn't changed by #{by}"
     )
   end
@@ -334,7 +334,7 @@ defmodule BitcrowdEcto.Assertions do
   @doc """
   Assert multiple database table count changes.
 
-  See `assert_count_difference/4` for details.
+  See `assert_count_difference/5` for details.
 
   ## Example
 
@@ -344,14 +344,21 @@ defmodule BitcrowdEcto.Assertions do
       end
   """
   @doc since: "0.1.0"
-  @spec assert_count_differences(Ecto.Repo.t(), [{module, integer}], (() -> any)) ::
+  @spec assert_count_differences(Ecto.Repo.t(), [{module, integer}], (() -> any), keyword) ::
           Changeset.t() | no_return
-  def assert_count_differences(_repo, [], how), do: how.()
+  def assert_count_differences(repo, table_counts, how, opts \\ [])
+  def assert_count_differences(_repo, [], how, _opts), do: how.()
 
-  def assert_count_differences(repo, [{schema, by} | rest], how) do
-    assert_count_difference(repo, schema, by, fn ->
-      assert_count_differences(repo, rest, how)
-    end)
+  def assert_count_differences(repo, [{schema, by} | rest], how, opts) do
+    assert_count_difference(
+      repo,
+      schema,
+      by,
+      fn ->
+        assert_count_differences(repo, rest, how, opts)
+      end,
+      opts
+    )
   end
 
   @doc """

@@ -348,7 +348,7 @@ defmodule BitcrowdEcto.AssertionsTest do
     end
   end
 
-  describe "assert_count_difference/4" do
+  describe "assert_count_difference/5" do
     test "asserts that a given function changes the count of a given database table" do
       assert_count_difference(TestRepo, TestSchema, 1, fn ->
         insert(:test_schema)
