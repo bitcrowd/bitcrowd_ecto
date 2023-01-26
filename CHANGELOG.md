@@ -2,7 +2,8 @@
 
 ### Added
 
-* Update `Repo.fetch_by`, `Repo.count`, and `Assertions.assert_count_difference` to take `opts` used for the repo query (eg: `prefix`). 
+* Give `Repo.fetch_by/2`, `Repo.count/1`, and `Assertions.assert_count_difference/4` an optional  `opts` parameter that is forwarded to the underlying Ecto function. Useful to pass query options like `:prefix`.
+
 ## [0.14.0] - 2023-01-03
 
 ### Added
