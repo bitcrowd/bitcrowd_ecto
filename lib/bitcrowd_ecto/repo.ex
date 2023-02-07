@@ -22,6 +22,12 @@ defmodule BitcrowdEcto.Repo do
           {:lock, :no_key_update | :update | false} | {:preload, atom | list} | {:error_tag, any}
   @type fetch_result :: {:ok, Ecto.Schema.t()} | {:error, {:not_found, Ecto.Queryable.t() | any}}
   @type lock_mode :: :no_key_update | :update
+  @type ecto_option ::
+          {:prefix, binary}
+          | {:timeout, integer | :infinity}
+          | {:log, Logger.level() | false}
+          | {:telemetry_event, any}
+          | {:telemetry_options, any}
 
   @doc """
   Fetches a record by primary key or returns a "tagged" error tuple.
@@ -32,17 +38,17 @@ defmodule BitcrowdEcto.Repo do
   @callback fetch(schema :: module, id :: any) :: fetch_result()
 
   @doc """
-  Fetches a record by primary key or returns a "tagged" error tuple.
+  Fetches a record by given clauses or returns the result wrapped in an ok tuple.
 
   See `c:fetch_by/3` for options.
   """
   @doc since: "0.1.0"
-  @callback fetch(schema :: module, id :: any, [fetch_option()]) :: fetch_result()
+  @callback fetch(schema :: module, id :: any, [fetch_option() | ecto_option()]) :: fetch_result()
 
   @doc """
   Fetches a record by given clauses or returns the result wrapped in an ok tuple.
 
-  See `c:fetch_by/3`.
+  See `c:fetch_by/3` for options.
   """
   @doc since: "0.1.0"
   @callback fetch_by(queryable :: Ecto.Queryable.t(), clauses :: map | keyword) :: fetch_result()
@@ -53,6 +59,23 @@ defmodule BitcrowdEcto.Repo do
   On error, a "tagged" error tuple is returned that contains the *original* queryable or module
   as the tag, e.g. `{:error, {:not_found, Account}}` for a `fetch_by(Account, id: 1)` call.
 
+  ## Additional options
+
+  * `prefix`             See https://hexdocs.pm/ecto/Ecto.Repo.html#c:one/2-options
+  * `timeout`            See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
+  * `log`                See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
+  * `telemetry_event`    See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
+  * `telemetry_options`  See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
+  """
+  @doc since: "0.1.0"
+  @callback fetch_by(queryable :: Ecto.Queryable.t(), clauses :: map | keyword, [
+              fetch_option() | ecto_option()
+            ]) ::
+              fetch_result()
+
+  @doc """
+  Allows to conveniently count a queryable.
+
   This function can also apply row locks.
 
   ## Options
@@ -61,14 +84,28 @@ defmodule BitcrowdEcto.Repo do
   * `preload` allows to preload associations
   """
   @doc since: "0.1.0"
-  @callback fetch_by(queryable :: Ecto.Queryable.t(), clauses :: map | keyword, [fetch_option()]) ::
-              fetch_result()
+  @callback count(queryable :: Ecto.Queryable.t()) :: non_neg_integer
 
   @doc """
   Allows to conveniently count a queryable.
+
+  This function can also apply row locks.
+
+  ## Options
+
+  * `lock`    any of `[:no_key_update, :update]` (defaults to `false`)
+  * `preload` allows to preload associations
+
+  ## Additional options
+
+  * `prefix`             See https://hexdocs.pm/ecto/Ecto.Repo.html#c:one/2-options
+  * `timeout`            See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
+  * `log`                See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
+  * `telemetry_event`    See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
+  * `telemetry_options`  See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
   """
-  @doc since: "0.1.0"
-  @callback count(queryable :: Ecto.Queryable.t()) :: non_neg_integer
+  @doc since: "0.14.1"
+  @callback count(queryable :: Ecto.Queryable.t(), [ecto_option()]) :: non_neg_integer
 
   @doc """
   Acquires an advisory lock for a named resource.
@@ -149,12 +186,15 @@ defmodule BitcrowdEcto.Repo do
   @doc false
   @spec fetch_by(module, Ecto.Queryable.t(), map | keyword, keyword) :: fetch_result
   def fetch_by(repo, queryable, clauses, opts \\ []) do
+    {ecto_opts, ber_opts} =
+      Keyword.split(opts, [:prefix, :timeout, :log, :telemetry_event, :telemetry_options])
+
     queryable
     |> where([], ^Enum.to_list(clauses))
-    |> maybe_apply_lock(opts)
-    |> maybe_preload(opts)
-    |> repo.one(opts)
-    |> ok_tuple_or_not_found_error(Keyword.get(opts, :error_tag, queryable))
+    |> maybe_apply_lock(ber_opts)
+    |> maybe_preload(ber_opts)
+    |> repo.one(ecto_opts)
+    |> ok_tuple_or_not_found_error(Keyword.get(ber_opts, :error_tag, queryable))
   end
 
   defp maybe_apply_lock(queryable, opts) do

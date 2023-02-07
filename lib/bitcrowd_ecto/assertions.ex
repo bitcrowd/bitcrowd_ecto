@@ -323,9 +323,11 @@ defmodule BitcrowdEcto.Assertions do
       end
   """
   @doc since: "0.1.0"
+  @spec assert_count_difference(Ecto.Repo.t(), module, integer, (() -> any)) ::
+          Changeset.t() | no_return
   @spec assert_count_difference(Ecto.Repo.t(), module, integer, (() -> any), keyword) ::
           Changeset.t() | no_return
-  def assert_count_difference(repo, schema, by, how, opts \\ []) when is_integer(by) do
+  def assert_count_difference(repo, schema, by, how, opts \\ []) do
     assert_difference(fn -> repo.count(schema, opts) end, by, how,
       message: "#{inspect(schema)} hasn't changed by #{by}"
     )
@@ -344,8 +346,11 @@ defmodule BitcrowdEcto.Assertions do
       end
   """
   @doc since: "0.1.0"
+  @spec assert_count_differences(Ecto.Repo.t(), [{module, integer}], (() -> any)) ::
+          Changeset.t() | no_return
   @spec assert_count_differences(Ecto.Repo.t(), [{module, integer}], (() -> any), keyword) ::
           Changeset.t() | no_return
+
   def assert_count_differences(repo, table_counts, how, opts \\ [])
   def assert_count_differences(_repo, [], how, _opts), do: how.()
 
