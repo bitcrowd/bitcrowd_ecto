@@ -58,14 +58,6 @@ defmodule BitcrowdEcto.Repo do
 
   On error, a "tagged" error tuple is returned that contains the *original* queryable or module
   as the tag, e.g. `{:error, {:not_found, Account}}` for a `fetch_by(Account, id: 1)` call.
-
-  ## Additional options
-
-  * `prefix`             See https://hexdocs.pm/ecto/Ecto.Repo.html#c:one/2-options
-  * `timeout`            See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
-  * `log`                See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
-  * `telemetry_event`    See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
-  * `telemetry_options`  See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
   """
   @doc since: "0.1.0"
   @callback fetch_by(queryable :: Ecto.Queryable.t(), clauses :: map | keyword, [
@@ -82,6 +74,14 @@ defmodule BitcrowdEcto.Repo do
 
   * `lock`    any of `[:no_key_update, :update]` (defaults to `false`)
   * `preload` allows to preload associations
+
+  ## Additional options
+
+  * `prefix`             See https://hexdocs.pm/ecto/Ecto.Repo.html#c:one/2-options
+  * `timeout`            See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
+  * `log`                See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
+  * `telemetry_event`    See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
+  * `telemetry_options`  See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
   """
   @doc since: "0.1.0"
   @callback count(queryable :: Ecto.Queryable.t()) :: non_neg_integer

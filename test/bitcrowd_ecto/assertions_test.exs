@@ -361,6 +361,20 @@ defmodule BitcrowdEcto.AssertionsTest do
         end)
       end
     end
+
+    test "accepts prefix option" do
+      prefix = "foo"
+
+      assert_count_difference(
+        TestRepo,
+        TestSchema,
+        2,
+        fn ->
+          insert_pair(:test_schema, [], prefix: prefix)
+        end,
+        prefix: prefix
+      )
+    end
   end
 
   describe "assert_count_differences/4" do
@@ -375,6 +389,19 @@ defmodule BitcrowdEcto.AssertionsTest do
           insert(:test_schema)
         end)
       end
+    end
+
+    test "accepts prefix option" do
+      prefix = "foo"
+
+      assert_count_differences(
+        TestRepo,
+        [{TestSchema, 2}],
+        fn ->
+          insert_pair(:test_schema, [], prefix: prefix)
+        end,
+        prefix: prefix
+      )
     end
   end
 
