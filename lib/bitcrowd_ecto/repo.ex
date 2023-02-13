@@ -104,7 +104,7 @@ defmodule BitcrowdEcto.Repo do
   * `telemetry_event`    See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
   * `telemetry_options`  See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
   """
-  @doc since: "0.14.1"
+  @doc since: "0.15.0"
   @callback count(queryable :: Ecto.Queryable.t(), [ecto_option()]) :: non_neg_integer
 
   @doc """
