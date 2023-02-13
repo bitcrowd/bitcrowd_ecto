@@ -325,7 +325,9 @@ defmodule BitcrowdEcto.Assertions do
   @doc since: "0.1.0"
   @spec assert_count_difference(Ecto.Repo.t(), module, integer, (() -> any)) ::
           Changeset.t() | no_return
-  @spec assert_count_difference(Ecto.Repo.t(), module, integer, (() -> any), keyword) ::
+  @spec assert_count_difference(Ecto.Repo.t(), module, integer, (() -> any), [
+          BitcrowdEcto.Repo.ecto_option()
+        ]) ::
           Changeset.t() | no_return
   def assert_count_difference(repo, schema, by, how, opts \\ []) do
     assert_difference(fn -> repo.count(schema, opts) end, by, how,
