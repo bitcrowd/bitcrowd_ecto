@@ -1,5 +1,7 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
+## [0.15.0] - 2023-02-13
+
 ### Added
 
 * Give `Repo.fetch_by/2`, `Repo.count/1`, and `Assertions.assert_count_difference/4` an optional  `opts` parameter that is forwarded to the underlying Ecto function. Useful to pass query options like `:prefix`.
