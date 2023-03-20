@@ -117,6 +117,10 @@ defmodule BitcrowdEcto.RepoTest do
 
       assert TestRepo.fetch_by(TestSchema, some_uuid: "doesnotcast") ==
                {:error, {:not_found, TestSchema}}
+
+      assert_raise Ecto.Query.CastError, fn ->
+        TestRepo.fetch_by(TestSchema, [some_uuid: "doesnotcast"], raise_cast_error: true)
+      end
     end
 
     test "returns the given error tag instead of the queryable" do
