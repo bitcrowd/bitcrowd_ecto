@@ -18,10 +18,19 @@ defmodule BitcrowdEcto.Repo do
   import Ecto.Query, only: [lock: 2, preload: 2, where: 3]
   alias Ecto.Adapters.SQL
 
-  @type fetch_option ::
-          {:lock, :no_key_update | :update | false} | {:preload, atom | list} | {:error_tag, any}
-  @type fetch_result :: {:ok, Ecto.Schema.t()} | {:error, {:not_found, Ecto.Queryable.t() | any}}
   @type lock_mode :: :no_key_update | :update
+
+  @type fetch_option ::
+          {:lock, lock_mode | false}
+          | {:preload, atom | list}
+          | {:error_tag, any}
+          | {:raise_cast_error, boolean()}
+          | ecto_option
+
+  @type fetch_result :: {:ok, Ecto.Schema.t()} | {:error, {:not_found, Ecto.Queryable.t() | any}}
+
+  @ecto_options [:prefix, :timeout, :log, :telemetry_event, :telemetry_options]
+
   @type ecto_option ::
           {:prefix, binary}
           | {:timeout, integer | :infinity}
@@ -38,15 +47,15 @@ defmodule BitcrowdEcto.Repo do
   @callback fetch(schema :: module, id :: any) :: fetch_result()
 
   @doc """
-  Fetches a record by given clauses or returns the result wrapped in an ok tuple.
+  Fetches a record by given clauses or returns a "tagged" error tuple.
 
   See `c:fetch_by/3` for options.
   """
   @doc since: "0.1.0"
-  @callback fetch(schema :: module, id :: any, [fetch_option() | ecto_option()]) :: fetch_result()
+  @callback fetch(schema :: module, id :: any, [fetch_option()]) :: fetch_result()
 
   @doc """
-  Fetches a record by given clauses or returns the result wrapped in an ok tuple.
+  Fetches a record by given clauses or returns a "tagged" error tuple.
 
   See `c:fetch_by/3` for options.
   """
@@ -54,28 +63,25 @@ defmodule BitcrowdEcto.Repo do
   @callback fetch_by(queryable :: Ecto.Queryable.t(), clauses :: map | keyword) :: fetch_result()
 
   @doc """
-  Fetches a record by given clauses or returns the result wrapped in an ok tuple.
+  Fetches a record by given clauses or returns a "tagged" error tuple.
 
-  On error, a "tagged" error tuple is returned that contains the *original* queryable or module
-  as the tag, e.g. `{:error, {:not_found, Account}}` for a `fetch_by(Account, id: 1)` call.
-  """
-  @doc since: "0.1.0"
-  @callback fetch_by(queryable :: Ecto.Queryable.t(), clauses :: map | keyword, [
-              fetch_option() | ecto_option()
-            ]) ::
-              fetch_result()
+  - On success, the record is wrapped in a `:ok` tuple.
+  - On error, a "tagged" error tuple is returned that contains the *original* queryable or module
+    as the tag, e.g. `{:error, {:not_found, Account}}` for a `fetch_by(Account, id: 1)` call.
 
-  @doc """
-  Allows to conveniently count a queryable.
+  Passing invalid values that would normally result in an `Ecto.Query.CastError` will result in
+  a `:not_found` error tuple as well.
 
   This function can also apply row locks.
 
   ## Options
 
-  * `lock`    any of `[:no_key_update, :update]` (defaults to `false`)
-  * `preload` allows to preload associations
+  * `lock`               any of `[:no_key_update, :update]` (defaults to `false`)
+  * `preload`            allows to preload associations
+  * `error_tag`          allows to specify a custom "tag" value (instead of the queryable)
+  * `raise_cast_error`   raise `CastError` instead of converting to `:not_found` (defaults to `false`)
 
-  ## Additional options
+  ## Ecto options
 
   * `prefix`             See https://hexdocs.pm/ecto/Ecto.Repo.html#c:one/2-options
   * `timeout`            See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
@@ -84,19 +90,21 @@ defmodule BitcrowdEcto.Repo do
   * `telemetry_options`  See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
   """
   @doc since: "0.1.0"
+  @callback fetch_by(queryable :: Ecto.Queryable.t(), clauses :: map | keyword, [fetch_option()]) ::
+              fetch_result()
+
+  @doc """
+  Allows to conveniently count a queryable.
+
+  See `c:count/2` for options.
+  """
+  @doc since: "0.1.0"
   @callback count(queryable :: Ecto.Queryable.t()) :: non_neg_integer
 
   @doc """
   Allows to conveniently count a queryable.
 
-  This function can also apply row locks.
-
-  ## Options
-
-  * `lock`    any of `[:no_key_update, :update]` (defaults to `false`)
-  * `preload` allows to preload associations
-
-  ## Additional options
+  ## Ecto options
 
   * `prefix`             See https://hexdocs.pm/ecto/Ecto.Repo.html#c:one/2-options
   * `timeout`            See [Ecto's Shared Options](https://hexdocs.pm/ecto/Ecto.Repo.html#module-shared-options)
@@ -186,15 +194,21 @@ defmodule BitcrowdEcto.Repo do
   @doc false
   @spec fetch_by(module, Ecto.Queryable.t(), map | keyword, keyword) :: fetch_result
   def fetch_by(repo, queryable, clauses, opts \\ []) do
-    {ecto_opts, ber_opts} =
-      Keyword.split(opts, [:prefix, :timeout, :log, :telemetry_event, :telemetry_options])
+    query =
+      queryable
+      |> where([], ^Enum.to_list(clauses))
+      |> maybe_apply_lock(opts)
+      |> maybe_preload(opts)
 
-    queryable
-    |> where([], ^Enum.to_list(clauses))
-    |> maybe_apply_lock(ber_opts)
-    |> maybe_preload(ber_opts)
-    |> repo.one(ecto_opts)
-    |> ok_tuple_or_not_found_error(Keyword.get(ber_opts, :error_tag, queryable))
+    result =
+      maybe_rescue_cast_error(opts, fn ->
+        repo.one(query, Keyword.take(opts, @ecto_options))
+      end)
+
+    case result do
+      nil -> {:error, {:not_found, Keyword.get(opts, :error_tag, queryable)}}
+      value -> {:ok, value}
+    end
   end
 
   defp maybe_apply_lock(queryable, opts) do
@@ -221,8 +235,17 @@ defmodule BitcrowdEcto.Repo do
     end
   end
 
-  defp ok_tuple_or_not_found_error(nil, error_tag), do: {:error, {:not_found, error_tag}}
-  defp ok_tuple_or_not_found_error(value, _error_tag), do: {:ok, value}
+  defp maybe_rescue_cast_error(opts, callback) do
+    if Keyword.get(opts, :raise_cast_error, false) do
+      callback.()
+    else
+      try do
+        callback.()
+      rescue
+        Ecto.Query.CastError -> nil
+      end
+    end
+  end
 
   @doc false
   @spec count(module, Ecto.Queryable.t(), keyword) :: non_neg_integer

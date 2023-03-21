@@ -37,6 +37,10 @@ defmodule BitcrowdEcto.RepoTest do
     test "fetches a record by primary key and wraps it into an ok tuple", %{resource: resource} do
       assert TestRepo.fetch(TestSchema, resource.id) == {:ok, resource}
     end
+
+    test "converts CastErrors to not_found errors" do
+      assert TestRepo.fetch(TestSchema, "doesnotcast") == {:error, {:not_found, TestSchema}}
+    end
   end
 
   describe "fetch/2 with schemas with non-standard primary key" do
@@ -100,6 +104,23 @@ defmodule BitcrowdEcto.RepoTest do
 
     test "can lock for :no_key_update", %{resource: %{id: id} = resource} do
       assert TestRepo.fetch_by(TestSchema, [id: id], lock: :no_key_update) == {:ok, resource}
+    end
+
+    test "converts CastErrors for binary_id columns to not_found errors" do
+      assert TestRepo.fetch_by(TestSchema, some_uuid: "doesnotcast") ==
+               {:error, {:not_found, TestSchema}}
+    end
+
+    test "converts CastErrors to not_found errors" do
+      assert TestRepo.fetch_by(TestSchema, id: "doesnotcast") ==
+               {:error, {:not_found, TestSchema}}
+
+      assert TestRepo.fetch_by(TestSchema, some_uuid: "doesnotcast") ==
+               {:error, {:not_found, TestSchema}}
+
+      assert_raise Ecto.Query.CastError, fn ->
+        TestRepo.fetch_by(TestSchema, [some_uuid: "doesnotcast"], raise_cast_error: true)
+      end
     end
 
     test "returns the given error tag instead of the queryable" do

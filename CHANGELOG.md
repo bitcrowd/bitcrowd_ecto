@@ -1,5 +1,11 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
+## Unreleased
+
+### Added
+
+* Convert `Ecto.Query.CastError` in `Repo.fetch_by/3` & friends to `:not_found` errors. Opt-out via `raise_cast_error` option.
+
 ## [0.15.0] - 2023-02-13
 
 ### Added

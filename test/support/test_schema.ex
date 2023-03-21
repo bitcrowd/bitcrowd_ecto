@@ -10,6 +10,7 @@ defmodule BitcrowdEcto.TestSchema do
     :some_string,
     :some_integer,
     :some_boolean,
+    :some_uuid,
     :datetime,
     :from,
     :until,
@@ -24,6 +25,7 @@ defmodule BitcrowdEcto.TestSchema do
     field(:some_string, :string)
     field(:some_integer, :integer)
     field(:some_boolean, :boolean)
+    field(:some_uuid, :binary_id)
     field(:datetime, :utc_datetime_usec)
     field(:from, :date)
     field(:until, :date)
