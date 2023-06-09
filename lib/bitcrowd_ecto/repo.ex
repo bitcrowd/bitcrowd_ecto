@@ -41,7 +41,7 @@ defmodule BitcrowdEcto.Repo do
   @doc """
   Fetches a record by primary key or returns a "tagged" error tuple.
 
-  See `c:fetch/2`.
+  See `c:fetch_by/3`.
   """
   @doc since: "0.1.0"
   @callback fetch(schema :: module, id :: any) :: fetch_result()
