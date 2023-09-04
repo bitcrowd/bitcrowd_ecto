@@ -17,4 +17,8 @@ defmodule BitcrowdEcto.Factory do
       name: sequence("name")
     }
   end
+
+  def serial_primary_key_test_schema_factory do
+    %BitcrowdEcto.SerialPrimaryKeyTestSchema{}
+  end
 end

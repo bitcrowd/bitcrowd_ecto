@@ -156,7 +156,7 @@ defmodule BitcrowdEcto.Repo do
       @behaviour BER
 
       @impl BER
-      def fetch(module, id, opts \\ []) when is_atom(module) and is_binary(id) do
+      def fetch(module, id, opts \\ []) when is_atom(module) do
         BER.fetch(__MODULE__, module, id, opts)
       end
 

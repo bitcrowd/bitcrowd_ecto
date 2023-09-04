@@ -1,5 +1,11 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
+## Unreleased
+
+### Fixed
+
+* Allow any type of `id` param in `Repo.fetch/2`. Remove the (incorrect) guard restricting the `id` param to binaries, against the spec saying it would allow `any`.
+
 ## [0.16.0] - 2023-03-21
 
 ### Added
