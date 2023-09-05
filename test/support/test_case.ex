@@ -17,6 +17,7 @@ defmodule BitcrowdEcto.TestCase do
 
       alias BitcrowdEcto.{
         AlternativePrimaryKeyTestSchema,
+        SerialPrimaryKeyTestSchema,
         TestRepo,
         TestSchema,
         TestSchemaWithPrefix

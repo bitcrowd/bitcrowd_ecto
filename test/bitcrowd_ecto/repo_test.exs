@@ -41,6 +41,11 @@ defmodule BitcrowdEcto.RepoTest do
     test "converts CastErrors to not_found errors" do
       assert TestRepo.fetch(TestSchema, "doesnotcast") == {:error, {:not_found, TestSchema}}
     end
+
+    test "handles any type of primary key (serial, uuid, etc)" do
+      resource = insert(:serial_primary_key_test_schema)
+      assert TestRepo.fetch(SerialPrimaryKeyTestSchema, resource.id) == {:ok, resource}
+    end
   end
 
   describe "fetch/2 with schemas with non-standard primary key" do
