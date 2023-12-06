@@ -215,10 +215,19 @@ defmodule BitcrowdEcto.Migrator do
   end
 
   defp down_tenant_migrations(repo) do
+    for tenant <- repo.known_prefixes() do
+      if schema_exists?(repo, tenant) do
+        down_tenant_migrations(repo, tenant)
+      else
+        ["SCHEMA DOES NOT EXIST: #{tenant}"]
+      end
+    end
+  end
+
+  defp down_tenant_migrations(repo, tenant) do
     path = tenant_migrations_path(repo)
 
-    for tenant <- repo.known_prefixes(),
-        {:down, prefix, name} <- Migrator.migrations(repo, [path], prefix: tenant) do
+    for {:down, prefix, name} <- Migrator.migrations(repo, [path], prefix: tenant) do
       "#{prefix}_#{name} (tenant: #{tenant})"
     end
   end
@@ -286,8 +295,12 @@ defmodule BitcrowdEcto.Migrator do
   SELECT 1 FROM information_schema.schemata WHERE schema_name = $1;
   """
 
+  defp schema_exists?(repo, tenant) do
+    match?(%{rows: [[1]]}, SQL.query!(repo, @exists_query, [tenant]))
+  end
+
   defp ensure_schema!(repo, tenant) do
-    unless match?(%{rows: [[1]]}, SQL.query!(repo, @exists_query, [tenant])) do
+    unless schema_exists?(repo, tenant) do
       SQL.query!(repo, ~s(CREATE SCHEMA "#{tenant}"), [])
     end
   end

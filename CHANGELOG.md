@@ -5,6 +5,7 @@
 ### Fixed
 
 * Allow any type of `id` param in `Repo.fetch/2`. Remove the (incorrect) guard restricting the `id` param to binaries, against the spec saying it would allow `any`.
+* Handle missing schemas gracefully in `Migrator.ensure_up!/0`.
 
 ## [0.16.0] - 2023-03-21
 
