@@ -527,6 +527,8 @@ defmodule BitcrowdEcto.Changeset do
   end
 
   defp cast_scalars(schema_struct, params, scalars, required) do
+    # Don't be confused, `--` is right-associative.
+    # https://hexdocs.pm/elixir/1.15.7/operators.html#operator-precedence-and-associativity
     required = scalars -- scalars -- required
 
     schema_struct
