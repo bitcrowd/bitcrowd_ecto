@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+
+* Add `BitcrowdEcto.Changeset.auto_cast/3`, a introspection-based automatic cast function.
+* Add `BitcrowdEcto.Changeset.auto_cast_and_apply_action/3`, a convenient wrapper around `auto_cast/3` that directly returns a schema struct.
+* Add `BitcrowdEcto.Assertions.assert_cast_error_on/2`.
+
 ### Fixed
 
 * Allow any type of `id` param in `Repo.fetch/2`. Remove the (incorrect) guard restricting the `id` param to binaries, against the spec saying it would allow `any`.

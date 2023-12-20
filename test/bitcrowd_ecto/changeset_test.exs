@@ -5,6 +5,36 @@ defmodule BitcrowdEcto.ChangesetTest do
   import BitcrowdEcto.Assertions
   import BitcrowdEcto.Changeset
 
+  defmodule TestEmbeddedSchema do
+    use Ecto.Schema
+
+    @primary_key false
+
+    embedded_schema do
+      field(:some_field, :integer)
+    end
+
+    def changeset(struct \\ %__MODULE__{}, params) do
+      Ecto.Changeset.cast(struct, params, [:some_field])
+    end
+  end
+
+  defmodule TestVarietySchema do
+    use Ecto.Schema
+
+    @primary_key false
+
+    schema "not_an_actual_table" do
+      field(:some_scalar, :integer)
+      field(:some_enum, Ecto.Enum, values: [:foo, :bar])
+      field(:some_more_complex_scalar, Money.Ecto.Composite.Type)
+      embeds_one(:one_embed, TestEmbeddedSchema)
+      embeds_many(:many_embeds, TestEmbeddedSchema)
+    end
+  end
+
+  doctest BitcrowdEcto.Changeset
+
   describe "validate_transition/3" do
     defp transition_changeset(from, to, transitions) do
       %TestSchema{some_string: from}
@@ -665,6 +695,93 @@ defmodule BitcrowdEcto.ChangesetTest do
         %TestSchema{}
         |> change(%{some_integer: 1})
         |> validate_money(:some_integer, more_than: @two_euros)
+      end
+    end
+  end
+
+  describe "auto_cast/3" do
+    defp params do
+      embedded = %{"some_field" => 12}
+
+      %{
+        "some_scalar" => 5,
+        "some_enum" => "foo",
+        "some_more_complex_scalar" => "USD 120",
+        "one_embed" => embedded,
+        "many_embeds" => [embedded, embedded]
+      }
+    end
+
+    test "allows to automatically cast all fields of a schema" do
+      %Ecto.Changeset{} = cs = auto_cast(TestVarietySchema, params())
+      assert cs.valid?
+      assert_changes(cs, :some_scalar, 5)
+      assert_changes(cs, :some_enum, :foo)
+      assert_changes(cs, :some_more_complex_scalar, Money.new(:USD, "120"))
+
+      %Ecto.Changeset{} = embedded_cs = cs.changes.one_embed
+      assert embedded_cs.valid?
+      assert_changes(embedded_cs, :some_field, 12)
+
+      assert [%Ecto.Changeset{valid?: true}, %Ecto.Changeset{valid?: true}] =
+               cs.changes.many_embeds
+    end
+
+    test "accepts structs as input" do
+      %Ecto.Changeset{} = cs = auto_cast(%TestVarietySchema{}, params())
+      assert cs.valid?
+    end
+
+    test "accepts changesets as input" do
+      %Ecto.Changeset{} = cs = auto_cast(change(%TestVarietySchema{}), params())
+      assert cs.valid?
+    end
+
+    test "accepts params maps with atom keys" do
+      cs = auto_cast(TestVarietySchema, %{some_scalar: 5})
+      assert cs.valid?
+      assert_changes(cs, :some_scalar, 5)
+    end
+
+    test "returns invalid changeset on cast errors" do
+      cs = auto_cast(TestVarietySchema, %{some_scalar: "foo"})
+      refute cs.valid?
+      assert_cast_error_on(cs, :some_scalar)
+    end
+
+    test "accepts a list of required fields and validates them" do
+      cs = auto_cast(TestVarietySchema, %{}, required: [:some_scalar])
+      refute cs.valid?
+      assert_required_error_on(cs, :some_scalar)
+      refute_errors_on(cs, :some_enum)
+    end
+
+    test "accepts a list of optional fields and validates them" do
+      cs = auto_cast(TestVarietySchema, %{}, optional: [:some_scalar])
+      refute cs.valid?
+      assert_required_error_on(cs, :some_enum)
+      refute_errors_on(cs, :some_scalar)
+    end
+
+    test "required validations work for embeds, too" do
+      cs =
+        auto_cast(
+          TestVarietySchema,
+          %{
+            one_embed: nil,
+            many_embeds: []
+          },
+          required: [:one_embed, :many_embeds]
+        )
+
+      refute cs.valid?
+      assert_required_error_on(cs, :one_embed)
+      assert_required_error_on(cs, :many_embeds)
+    end
+
+    test ":required and :optional are mutually exclusive" do
+      assert_raise ArgumentError, ~r/options are mutually exclusive/, fn ->
+        auto_cast(TestVarietySchema, %{}, required: [], optional: [])
       end
     end
   end

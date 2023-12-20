@@ -91,7 +91,7 @@ defmodule BitcrowdEcto.Assertions do
     changeset
   end
 
-  for validation <- [:required, :format, :number, :inclusion, :acceptance] do
+  for validation <- [:cast, :required, :format, :number, :inclusion, :acceptance] do
     @doc """
     Asserts that a changeset contains a failed "#{validation}" validation on a given field.
 
