@@ -699,7 +699,7 @@ defmodule BitcrowdEcto.ChangesetTest do
     end
   end
 
-  describe "auto_cast/3" do
+  describe "cast_all/3" do
     defp params do
       embedded = %{"some_field" => 12}
 
@@ -713,7 +713,7 @@ defmodule BitcrowdEcto.ChangesetTest do
     end
 
     test "allows to automatically cast all fields of a schema" do
-      %Ecto.Changeset{} = cs = auto_cast(TestVarietySchema, params())
+      %Ecto.Changeset{} = cs = cast_all(TestVarietySchema, params())
       assert cs.valid?
       assert_changes(cs, :some_scalar, 5)
       assert_changes(cs, :some_enum, :foo)
@@ -728,36 +728,36 @@ defmodule BitcrowdEcto.ChangesetTest do
     end
 
     test "accepts structs as input" do
-      %Ecto.Changeset{} = cs = auto_cast(%TestVarietySchema{}, params())
+      %Ecto.Changeset{} = cs = cast_all(%TestVarietySchema{}, params())
       assert cs.valid?
     end
 
     test "accepts changesets as input" do
-      %Ecto.Changeset{} = cs = auto_cast(change(%TestVarietySchema{}), params())
+      %Ecto.Changeset{} = cs = cast_all(change(%TestVarietySchema{}), params())
       assert cs.valid?
     end
 
     test "accepts params maps with atom keys" do
-      cs = auto_cast(TestVarietySchema, %{some_scalar: 5})
+      cs = cast_all(TestVarietySchema, %{some_scalar: 5})
       assert cs.valid?
       assert_changes(cs, :some_scalar, 5)
     end
 
     test "returns invalid changeset on cast errors" do
-      cs = auto_cast(TestVarietySchema, %{some_scalar: "foo"})
+      cs = cast_all(TestVarietySchema, %{some_scalar: "foo"})
       refute cs.valid?
       assert_cast_error_on(cs, :some_scalar)
     end
 
     test "accepts a list of required fields and validates them" do
-      cs = auto_cast(TestVarietySchema, %{}, required: [:some_scalar])
+      cs = cast_all(TestVarietySchema, %{}, required: [:some_scalar])
       refute cs.valid?
       assert_required_error_on(cs, :some_scalar)
       refute_errors_on(cs, :some_enum)
     end
 
     test "accepts a list of optional fields and validates them" do
-      cs = auto_cast(TestVarietySchema, %{}, optional: [:some_scalar])
+      cs = cast_all(TestVarietySchema, %{}, optional: [:some_scalar])
       refute cs.valid?
       assert_required_error_on(cs, :some_enum)
       refute_errors_on(cs, :some_scalar)
@@ -765,7 +765,7 @@ defmodule BitcrowdEcto.ChangesetTest do
 
     test "required validations work for embeds, too" do
       cs =
-        auto_cast(
+        cast_all(
           TestVarietySchema,
           %{
             one_embed: nil,
@@ -781,7 +781,7 @@ defmodule BitcrowdEcto.ChangesetTest do
 
     test ":required and :optional are mutually exclusive" do
       assert_raise ArgumentError, ~r/options are mutually exclusive/, fn ->
-        auto_cast(TestVarietySchema, %{}, required: [], optional: [])
+        cast_all(TestVarietySchema, %{}, required: [], optional: [])
       end
     end
   end

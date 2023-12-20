@@ -426,7 +426,7 @@ defmodule BitcrowdEcto.Changeset do
     end
   end
 
-  @type auto_cast_option :: {:action, atom}
+  @type cast_all_option :: {:action, atom}
 
   @doc """
   Introspects a schema and casts all defined fields from a params map.
@@ -443,45 +443,45 @@ defmodule BitcrowdEcto.Changeset do
 
   ## Examples
 
-      iex> changeset = auto_cast(TestEmbeddedSchema, %{some_field: 4})
+      iex> changeset = cast_all(TestEmbeddedSchema, %{some_field: 4})
       iex> changeset.valid?
       true
 
-      iex> changeset = auto_cast(%TestEmbeddedSchema{}, %{some_field: 4})
+      iex> changeset = cast_all(%TestEmbeddedSchema{}, %{some_field: 4})
       iex> changeset.valid?
       true
 
-      iex> changeset = auto_cast(change(%TestEmbeddedSchema{}), %{some_field: 4})
+      iex> changeset = cast_all(change(%TestEmbeddedSchema{}), %{some_field: 4})
       iex> changeset.valid?
       true
 
-      iex> changeset = auto_cast(TestEmbeddedSchema, %{}, required: [:some_field])
+      iex> changeset = cast_all(TestEmbeddedSchema, %{}, required: [:some_field])
       iex> changeset.errors
       [some_field: {"can't be blank", [validation: :required]}]
 
-      iex> changeset = auto_cast(TestEmbeddedSchema, %{}, optional: [:some_other_field])
+      iex> changeset = cast_all(TestEmbeddedSchema, %{}, optional: [:some_other_field])
       iex> changeset.errors
       [some_field: {"can't be blank", [validation: :required]}]
 
   """
   @doc since: "0.17.0"
-  @spec auto_cast(module | struct, map) :: Ecto.Changeset.t()
-  @spec auto_cast(module | struct, map, [auto_cast_option]) :: Ecto.Changeset.t()
-  def auto_cast(schema_or_struct_or_changeset, params, opts \\ [])
+  @spec cast_all(module | struct, map) :: Ecto.Changeset.t()
+  @spec cast_all(module | struct, map, [cast_all_option]) :: Ecto.Changeset.t()
+  def cast_all(schema_or_struct_or_changeset, params, opts \\ [])
 
-  def auto_cast(%Ecto.Changeset{} = changeset, params, opts) do
-    do_auto_cast(changeset.data.__struct__, changeset, params, opts)
+  def cast_all(%Ecto.Changeset{} = changeset, params, opts) do
+    do_cast_all(changeset.data.__struct__, changeset, params, opts)
   end
 
-  def auto_cast(schema, params, opts) when is_atom(schema) do
-    do_auto_cast(schema, struct!(schema), params, opts)
+  def cast_all(schema, params, opts) when is_atom(schema) do
+    do_cast_all(schema, struct!(schema), params, opts)
   end
 
-  def auto_cast(struct, params, opts) when is_struct(struct) do
-    do_auto_cast(struct.__struct__, struct, params, opts)
+  def cast_all(struct, params, opts) when is_struct(struct) do
+    do_cast_all(struct.__struct__, struct, params, opts)
   end
 
-  defp do_auto_cast(schema, struct_or_changeset, params, opts) do
+  defp do_cast_all(schema, struct_or_changeset, params, opts) do
     required = required_fields(schema, opts)
     %{scalars: scalars, embeds: embeds} = grouped_fields(schema)
 

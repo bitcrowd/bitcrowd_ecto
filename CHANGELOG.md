@@ -4,7 +4,7 @@
 
 ### Added
 
-* Add `BitcrowdEcto.Changeset.auto_cast/3`, a introspection-based automatic cast function.
+* Add `BitcrowdEcto.Changeset.cast_all/3`, a introspection-based automatic cast function.
 * Add `BitcrowdEcto.Assertions.assert_cast_error_on/2`.
 
 ### Fixed
