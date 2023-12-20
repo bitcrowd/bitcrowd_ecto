@@ -486,8 +486,8 @@ defmodule BitcrowdEcto.Changeset do
     %{scalars: scalars, embeds: embeds} = grouped_fields(schema)
 
     struct_or_changeset
-    |> cast_scalars(params, grouped.scalars, required)
-    |> cast_embeds(grouped.embeds, required)
+    |> cast_scalars(params, scalars, required)
+    |> cast_embeds(embeds, required)
   end
 
   defp required_fields(schema, opts) do
