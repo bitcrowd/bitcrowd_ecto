@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+
+* Add `BitcrowdEcto.Changeset.cast_all/3`, a introspection-based automatic cast function.
+* Add `BitcrowdEcto.Assertions.assert_cast_error_on/2`.
+
 ### Fixed
 
 * Allow any type of `id` param in `Repo.fetch/2`. Remove the (incorrect) guard restricting the `id` param to binaries, against the spec saying it would allow `any`.

@@ -59,6 +59,18 @@ defmodule BitcrowdEcto.AssertionsTest do
     end
   end
 
+  describe "assert_cast_error_on/2" do
+    test "asserts on the :cast error on a field" do
+      cs = changeset(%{some_string: 12, some_integer: 1})
+
+      assert assert_cast_error_on(cs, :some_string) == cs
+
+      assert_raise ExUnit.AssertionError, fn ->
+        assert_cast_error_on(cs, :some_integer)
+      end
+    end
+  end
+
   describe "assert_required_error_on/2" do
     test "asserts on the :required error on a field" do
       cs = changeset() |> validate_required(:some_string)

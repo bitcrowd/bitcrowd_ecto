@@ -425,4 +425,120 @@ defmodule BitcrowdEcto.Changeset do
       end
     end
   end
+
+  @type cast_all_option :: {:action, atom}
+
+  @doc """
+  Introspects a schema and casts all defined fields from a params map.
+
+  - Accepts a schema module or structs or changesets.
+  - Can deal with embeds.
+
+  ## Options
+
+  - `required` list of required field names
+  - `optional` list of optional field names (= inverse set is required)
+
+  `required` and `optional` options must not be present at the same time.
+
+  ## Examples
+
+      iex> changeset = cast_all(TestEmbeddedSchema, %{some_field: 4})
+      iex> changeset.valid?
+      true
+
+      iex> changeset = cast_all(%TestEmbeddedSchema{}, %{some_field: 4})
+      iex> changeset.valid?
+      true
+
+      iex> changeset = cast_all(change(%TestEmbeddedSchema{}), %{some_field: 4})
+      iex> changeset.valid?
+      true
+
+      iex> changeset = cast_all(TestEmbeddedSchema, %{}, required: [:some_field])
+      iex> changeset.errors
+      [some_field: {"can't be blank", [validation: :required]}]
+
+      iex> changeset = cast_all(TestEmbeddedSchema, %{}, optional: [:some_other_field])
+      iex> changeset.errors
+      [some_field: {"can't be blank", [validation: :required]}]
+
+  """
+  @doc since: "0.17.0"
+  @spec cast_all(module | struct, map) :: Ecto.Changeset.t()
+  @spec cast_all(module | struct, map, [cast_all_option]) :: Ecto.Changeset.t()
+  def cast_all(schema_or_struct_or_changeset, params, opts \\ [])
+
+  def cast_all(%Ecto.Changeset{} = changeset, params, opts) do
+    do_cast_all(changeset.data.__struct__, changeset, params, opts)
+  end
+
+  def cast_all(schema, params, opts) when is_atom(schema) do
+    do_cast_all(schema, struct!(schema), params, opts)
+  end
+
+  def cast_all(struct, params, opts) when is_struct(struct) do
+    do_cast_all(struct.__struct__, struct, params, opts)
+  end
+
+  defp do_cast_all(schema, struct_or_changeset, params, opts) do
+    required = required_fields(schema, opts)
+    %{scalars: scalars, embeds: embeds} = grouped_fields(schema)
+
+    struct_or_changeset
+    |> cast_scalars(params, scalars, required)
+    |> cast_embeds(embeds, required)
+  end
+
+  defp required_fields(schema, opts) do
+    required = Keyword.get(opts, :required)
+    optional = Keyword.get(opts, :optional)
+
+    cond do
+      required && optional ->
+        raise ArgumentError, ":required and :optional options are mutually exclusive"
+
+      required ->
+        required
+
+      optional ->
+        schema.__schema__(:fields) -- optional
+
+      true ->
+        []
+    end
+  end
+
+  defp grouped_fields(schema) do
+    :fields
+    |> schema.__schema__()
+    |> Enum.group_by(fn field ->
+      case schema.__schema__(:type, field) do
+        {:parameterized, Ecto.Embedded, _} ->
+          :embeds
+
+        # Simplification, can be extended as needed.
+        _other ->
+          :scalars
+      end
+    end)
+    |> Map.put_new(:embeds, [])
+    |> Map.put_new(:scalars, [])
+  end
+
+  defp cast_scalars(schema_struct, params, scalars, required) do
+    # Don't be confused, `--` is right-associative.
+    # https://hexdocs.pm/elixir/1.15.7/operators.html#operator-precedence-and-associativity
+    required = scalars -- scalars -- required
+
+    schema_struct
+    |> Ecto.Changeset.cast(params, scalars)
+    |> Ecto.Changeset.validate_required(required)
+  end
+
+  defp cast_embeds(changeset, embeds, required) do
+    Enum.reduce(embeds, changeset, fn embed, cs ->
+      Ecto.Changeset.cast_embed(cs, embed, required: embed in required)
+    end)
+  end
 end
