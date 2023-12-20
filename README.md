@@ -10,7 +10,7 @@ This library contains Bitcrowd's collection of tiny Ecto helpers.
 * `BitcrowdEcto.Repo` contains extensions for Ecto repos, like `fetch/2`.
 * `BitcrowdEcto.Migrator` contains a tool for migrating from within releases.
 * `BitcrowdEcto.Migration` contains functions used in migrations.
-* `BitcrowdEcto.Changeset` contains mostly validators.
+* `BitcrowdEcto.Changeset` contains mostly validators, plus the introspection-based `cast_all/3`.
   - The `validate_money/3` validator is enabled when you add `ex_money` as a dependency to your project. Note that you need to recompile `bitcrowd_ecto` when you add `ex_money` later.
 * `BitcrowdEcto.DateTime` contains date/time helpers.
 * `BitcrowdEcto.Assertions` has an assortment of useful ExUnit assertions related to Ecto schemas.
