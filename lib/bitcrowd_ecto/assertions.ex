@@ -259,9 +259,9 @@ defmodule BitcrowdEcto.Assertions do
       end
   """
   @doc since: "0.1.0"
-  @spec assert_difference((() -> float | integer), float | integer, (() -> any)) ::
+  @spec assert_difference((-> float | integer), float | integer, (-> any)) ::
           Changeset.t() | no_return
-  @spec assert_difference((() -> float | integer), float | integer, (() -> any), [
+  @spec assert_difference((-> float | integer), float | integer, (-> any), [
           {:message, String.t()}
         ]) :: Changeset.t() | no_return
   def assert_difference(what, by, how, opts \\ []) do
@@ -292,8 +292,8 @@ defmodule BitcrowdEcto.Assertions do
       end
   """
   @doc since: "0.1.0"
-  @spec refute_difference((() -> any), (() -> any)) :: Changeset.t() | no_return
-  @spec refute_difference((() -> any), (() -> any), [{:message, String.t()}]) ::
+  @spec refute_difference((-> any), (-> any)) :: Changeset.t() | no_return
+  @spec refute_difference((-> any), (-> any), [{:message, String.t()}]) ::
           Changeset.t() | no_return
   def refute_difference(what, how, opts \\ []) do
     msg = Keyword.get(opts, :message, "#{inspect(what)} has changed")
@@ -323,9 +323,9 @@ defmodule BitcrowdEcto.Assertions do
       end
   """
   @doc since: "0.1.0"
-  @spec assert_count_difference(Ecto.Repo.t(), module, integer, (() -> any)) ::
+  @spec assert_count_difference(Ecto.Repo.t(), module, integer, (-> any)) ::
           Changeset.t() | no_return
-  @spec assert_count_difference(Ecto.Repo.t(), module, integer, (() -> any), [
+  @spec assert_count_difference(Ecto.Repo.t(), module, integer, (-> any), [
           BitcrowdEcto.Repo.ecto_option()
         ]) ::
           Changeset.t() | no_return
@@ -348,9 +348,9 @@ defmodule BitcrowdEcto.Assertions do
       end
   """
   @doc since: "0.1.0"
-  @spec assert_count_differences(Ecto.Repo.t(), [{module, integer}], (() -> any)) ::
+  @spec assert_count_differences(Ecto.Repo.t(), [{module, integer}], (-> any)) ::
           Changeset.t() | no_return
-  @spec assert_count_differences(Ecto.Repo.t(), [{module, integer}], (() -> any), keyword) ::
+  @spec assert_count_differences(Ecto.Repo.t(), [{module, integer}], (-> any), keyword) ::
           Changeset.t() | no_return
 
   def assert_count_differences(repo, table_counts, how, opts \\ [])
