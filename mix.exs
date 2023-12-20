@@ -56,6 +56,11 @@ defmodule BitcrowdEcto.MixProject do
 
   defp aliases do
     [
+      test: [
+        "ecto.create --quiet",
+        "ecto.migrate",
+        "test"
+      ],
       lint: [
         "format --check-formatted",
         "credo --strict",
@@ -75,8 +80,8 @@ defmodule BitcrowdEcto.MixProject do
       {:ecto_sql, "~> 3.6"},
       {:ex_money, "~> 5.12", optional: true},
       {:ex_money_sql, "~> 1.7", only: [:dev, :test]},
-      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.1", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ex_doc, "> 0.0.0", only: [:dev], runtime: false},
       {:ex_machina, "~> 2.7", only: [:dev, :test]},
       {:junit_formatter, "~> 3.3", only: [:test]},
