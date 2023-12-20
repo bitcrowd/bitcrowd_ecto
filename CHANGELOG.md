@@ -5,7 +5,6 @@
 ### Added
 
 * Add `BitcrowdEcto.Changeset.auto_cast/3`, a introspection-based automatic cast function.
-* Add `BitcrowdEcto.Changeset.auto_cast_and_apply_action/3`, a convenient wrapper around `auto_cast/3` that directly returns a schema struct.
 * Add `BitcrowdEcto.Assertions.assert_cast_error_on/2`.
 
 ### Fixed
