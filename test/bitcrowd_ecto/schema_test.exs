@@ -7,7 +7,7 @@ defmodule BitcrowdEcto.SchemaTest do
   defmodule TestEnumSchema do
     use Ecto.Schema
 
-    schema "not_an_actual_table" do
+    schema "test_schema" do
       field(:some_enum, Ecto.Enum, values: [:foo, :bar])
       field(:some_other_field, :integer)
     end
