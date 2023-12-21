@@ -1,5 +1,9 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
+## [1.0.0] - 2023-12-21
+
+No changes from v0.17.0.
+
 ## [0.17.0] - 2023-12-20
 
 ### Added

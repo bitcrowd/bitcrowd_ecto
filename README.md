@@ -16,6 +16,8 @@ This library contains Bitcrowd's collection of tiny Ecto helpers.
 * `BitcrowdEcto.Assertions` has an assortment of useful ExUnit assertions related to Ecto schemas.
 * `BitcrowdEcto.Random` contains functions that generate random tokens.
 
+<!-- MDOC -->
+
 ## Steps to release
 
 * Replace the version number in `mix.exs`
@@ -29,4 +31,3 @@ git push --tags
 mix hex.publish
 ```
 
-<!-- MDOC -->
