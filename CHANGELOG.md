@@ -1,5 +1,11 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
+## Unreleased
+
+### Added
+
+* Ensure field/assoc/embed exists when listing errors in `flat_errors_on/3`. This prevents accidental test passes on typos in assertions like `refute_errors_on(cs, :sommtypo)`.
+
 ## [1.0.0] - 2023-12-21
 
 No changes from v0.17.0.
