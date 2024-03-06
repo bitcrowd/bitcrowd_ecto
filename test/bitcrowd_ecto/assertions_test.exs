@@ -30,6 +30,12 @@ defmodule BitcrowdEcto.AssertionsTest do
       assert :bar in flat_errors_on(cs, :some_string, metadata: :foo)
       assert :bar in flat_errors_on(cs, :some_string, metadata: [:foo])
     end
+
+    test "fails when trying to list errors for a field/assoc/embed that does not exist" do
+      assert_raise ExUnit.AssertionError, ~r/not a field/, fn ->
+        assert flat_errors_on(changeset(), :doesnotexist)
+      end
+    end
   end
 
   describe "assert_error_on/4" do

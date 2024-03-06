@@ -43,7 +43,9 @@ defmodule BitcrowdEcto.Assertions do
   @doc since: "0.1.0"
   @spec flat_errors_on(Changeset.t(), atom) :: [String.t() | atom]
   @spec flat_errors_on(Changeset.t(), atom, [{:metadata, atom}]) :: [String.t() | atom]
-  def flat_errors_on(changeset, field, opts \\ []) do
+  def flat_errors_on(%Changeset{} = changeset, field, opts \\ []) when is_atom(field) do
+    assert_field_or_assoc_or_embed(changeset, field)
+
     metadata =
       opts
       |> Keyword.get(:metadata, [:constraint, :validation])
@@ -64,6 +66,23 @@ defmodule BitcrowdEcto.Assertions do
 
       [interpolated | metadata]
     end)
+  end
+
+  defp assert_field_or_assoc_or_embed(%Changeset{} = changeset, field) when is_atom(field) do
+    assert_field_or_assoc_or_embed(changeset.data, field)
+  end
+
+  defp assert_field_or_assoc_or_embed(%{__struct__: schema}, field) when is_atom(field) do
+    fields_and_assocs_and_embeds =
+      List.flatten([
+        schema.__schema__(:fields),
+        schema.__schema__(:associations),
+        schema.__schema__(:embeds)
+      ])
+
+    assert field in fields_and_assocs_and_embeds,
+      message:
+        "Trying to access #{inspect(field)} on #{inspect(schema)}, but it is not a field, association, or embed."
   end
 
   @doc """
