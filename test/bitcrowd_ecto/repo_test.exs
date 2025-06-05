@@ -3,6 +3,7 @@
 defmodule BitcrowdEcto.RepoTest do
   use BitcrowdEcto.TestCase, async: true
   require Ecto.Query
+  alias BitcrowdEcto.TestRepoWithUntaggedNotFoundErrors
 
   defp insert_test_schema(_) do
     %{resource: insert(:test_schema)}
@@ -159,6 +160,20 @@ defmodule BitcrowdEcto.RepoTest do
                {:error, {:not_found, TestSchema}}
 
       assert TestRepo.fetch_by(TestSchema, [id: resource.id], prefix: prefix) == {:ok, resource}
+    end
+  end
+
+  describe "error tagging can be disabled" do
+    test "error tagging can be disabled on fetch/2, fetch/3, fetch_by/3 calls" do
+      assert TestRepo.fetch(TestSchema, Ecto.UUID.generate(), error_tag: false) ==
+               {:error, :not_found}
+    end
+
+    test "error tagging can be disabled globally" do
+      start_supervised!(TestRepoWithUntaggedNotFoundErrors)
+
+      assert TestRepoWithUntaggedNotFoundErrors.fetch(TestSchema, Ecto.UUID.generate()) ==
+               {:error, :not_found}
     end
   end
 end

@@ -23,11 +23,14 @@ defmodule BitcrowdEcto.Repo do
   @type fetch_option ::
           {:lock, lock_mode | false}
           | {:preload, atom | list}
-          | {:error_tag, any}
+          | {:error_tag, false | any}
           | {:raise_cast_error, boolean()}
           | ecto_option
 
-  @type fetch_result :: {:ok, Ecto.Schema.t()} | {:error, {:not_found, Ecto.Queryable.t() | any}}
+  @type fetch_result ::
+          {:ok, Ecto.Schema.t()}
+          | {:error, {:not_found, Ecto.Queryable.t() | any}}
+          | {:error, :not_found}
 
   @ecto_options [:prefix, :timeout, :log, :telemetry_event, :telemetry_options]
 
@@ -39,7 +42,7 @@ defmodule BitcrowdEcto.Repo do
           | {:telemetry_options, any}
 
   @doc """
-  Fetches a record by primary key or returns a "tagged" error tuple.
+  Fetches a record by primary key or returns an error tuple.
 
   See `c:fetch_by/3`.
   """
@@ -47,7 +50,7 @@ defmodule BitcrowdEcto.Repo do
   @callback fetch(schema :: module, id :: any) :: fetch_result()
 
   @doc """
-  Fetches a record by given clauses or returns a "tagged" error tuple.
+  Fetches a record by given clauses or returns an error tuple.
 
   See `c:fetch_by/3` for options.
   """
@@ -55,7 +58,7 @@ defmodule BitcrowdEcto.Repo do
   @callback fetch(schema :: module, id :: any, [fetch_option()]) :: fetch_result()
 
   @doc """
-  Fetches a record by given clauses or returns a "tagged" error tuple.
+  Fetches a record by given clauses or returns an error tuple.
 
   See `c:fetch_by/3` for options.
   """
@@ -63,22 +66,38 @@ defmodule BitcrowdEcto.Repo do
   @callback fetch_by(queryable :: Ecto.Queryable.t(), clauses :: map | keyword) :: fetch_result()
 
   @doc """
-  Fetches a record by given clauses or returns a "tagged" error tuple.
+  Fetches a record by given clauses or returns an error tuple.
 
   - On success, the record is wrapped in a `:ok` tuple.
-  - On error, a "tagged" error tuple is returned that contains the *original* queryable or module
-    as the tag, e.g. `{:error, {:not_found, Account}}` for a `fetch_by(Account, id: 1)` call.
+  - On error, an error tuple is returned
+
+  ## Tagged error tuples
+
+  By default, the error tuple will be a "tagged" `:not_found` tuple, e.g.
+  `{:error, {:not_found, Account}}` for a `fetch_by(Account, id: 1)` call, where the "tag" is
+  the unmodified `queryable` parameter. The idea behind this is to avoid mix-ups of
+  naked `:not_found` errors, particularly in `with` clauses.
+
+  Tagging behaviour may be disabled by passing the `error_tag: false` option to return
+  naked `{:error, :not_found}` tuples instead. For existing applications where untagged errors
+  are the norm, one may set the `tagged_not_found_errors: false` option when using this module.
+
+      use BitcrowdEcto.Repo, tagged_not_found_errors: false
+
+  ## Automatic conversion of `CastError`
 
   Passing invalid values that would normally result in an `Ecto.Query.CastError` will result in
-  a `:not_found` error tuple as well.
+  a `:not_found` error tuple. This is useful for low-level handling of invalid UUIDs passed
+  from a hand-edited URL to the domain layer.
 
-  This function can also apply row locks.
+  This behaviour can be disabled by passing `raise_cast_error: false`.
 
   ## Options
 
   * `lock`               any of `[:no_key_update, :update]` (defaults to `false`)
   * `preload`            allows to preload associations
   * `error_tag`          allows to specify a custom "tag" value (instead of the queryable)
+                         or `false` to disabled tagged error tuples
   * `raise_cast_error`   raise `CastError` instead of converting to `:not_found` (defaults to `false`)
 
   ## Ecto options
@@ -149,11 +168,17 @@ defmodule BitcrowdEcto.Repo do
   @doc since: "0.1.0"
   @callback advisory_xact_lock(atom | binary) :: :ok
 
-  defmacro __using__(_) do
+  defmacro __using__(opts) do
+    tagged_not_found_errors = Keyword.get(opts, :tagged_not_found_errors, true)
+
     quote do
       alias BitcrowdEcto.Repo, as: BER
 
       @behaviour BER
+
+      @doc false
+      @spec __tagged_not_found_errors__() :: boolean
+      def __tagged_not_found_errors__, do: unquote(tagged_not_found_errors)
 
       @impl BER
       def fetch(module, id, opts \\ []) when is_atom(module) do
@@ -206,7 +231,7 @@ defmodule BitcrowdEcto.Repo do
       end)
 
     case result do
-      nil -> {:error, {:not_found, Keyword.get(opts, :error_tag, queryable)}}
+      nil -> handle_not_found_error(repo, queryable, opts)
       value -> {:ok, value}
     end
   end
@@ -244,6 +269,16 @@ defmodule BitcrowdEcto.Repo do
       rescue
         Ecto.Query.CastError -> nil
       end
+    end
+  end
+
+  defp handle_not_found_error(repo, queryable, opts) do
+    tag = Keyword.get(opts, :error_tag, queryable)
+
+    if repo.__tagged_not_found_errors__() == false or tag == false do
+      {:error, :not_found}
+    else
+      {:error, {:not_found, tag}}
     end
   end
 

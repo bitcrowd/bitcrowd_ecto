@@ -5,6 +5,7 @@
 ### Added
 
 * Ensure field/assoc/embed exists when listing errors in `flat_errors_on/3`. This prevents accidental test passes on typos in assertions like `refute_errors_on(cs, :sommtypo)`.
+* Add ability to disable "tagged" not found errors in `Repo.fetch/2` and friends (local to calls or global option).
 
 ## [1.0.0] - 2023-12-21
 
