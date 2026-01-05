@@ -137,7 +137,7 @@ defmodule BitcrowdEcto.Repo do
   "application" key and one specific lock key), in which case PostgreSQL concatenates them
   into a 64-bit value. In any case you need to pass integers.
 
-  We decided that we wanted to have atom or string keys for better readability.  Hence, in=
+  We decided that we wanted to have atom or string keys for better readability.  Hence, in
   order to make PostgreSQL happy, we hash these strings into 64 bits signed ints.
 
   64 bits make a pretty big number already, so it is quite unlikely that two of our keys (or
@@ -254,8 +254,8 @@ defmodule BitcrowdEcto.Repo do
   end
 
   @doc false
-  def advisory_xact_lock(repo, name) do
-    <<advisory_lock_key::signed-integer-64, _rest::binary>> = :crypto.hash(:sha, name)
+  def advisory_xact_lock(repo, name) when is_atom(name) or is_binary(name) do
+    <<advisory_lock_key::signed-integer-64, _rest::binary>> = :crypto.hash(:sha, to_string(name))
     SQL.query!(repo, "SELECT pg_advisory_xact_lock($1);", [advisory_lock_key])
     :ok
   end
