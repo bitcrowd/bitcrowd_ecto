@@ -517,6 +517,9 @@ defmodule BitcrowdEcto.Changeset do
         {:parameterized, Ecto.Embedded, _} ->
           :embeds
 
+        {:parameterized, {Ecto.Embedded, _}} ->
+          :embeds
+
         # Simplification, can be extended as needed.
         _other ->
           :scalars
@@ -527,9 +530,7 @@ defmodule BitcrowdEcto.Changeset do
   end
 
   defp cast_scalars(schema_struct, params, scalars, required) do
-    # Don't be confused, `--` is right-associative.
-    # https://hexdocs.pm/elixir/1.15.7/operators.html#operator-precedence-and-associativity
-    required = scalars -- scalars -- required
+    required = scalars -- (scalars -- required)
 
     schema_struct
     |> Ecto.Changeset.cast(params, scalars)

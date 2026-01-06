@@ -2,25 +2,25 @@ name: Github Actions CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
 
 jobs:
   build:
     # Containers must run in Linux based operating systems
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     name: Build and test
     env:
       MIX_ENV: test
 
     strategy:
       matrix:
-        otp: ['26.2']
-        elixir: ['1.15.7']
+        otp: ["28.3"]
+        elixir: ["1.19.4"]
 
     services:
       postgres:
-        image: postgres:13-alpine
+        image: postgres:17-alpine
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -34,48 +34,48 @@ jobs:
           --health-retries 5
 
     steps:
-    - name: Check out repository code
-      uses: actions/checkout@v3
+      - name: Check out repository code
+        uses: actions/checkout@v3
 
-    - name: Set up Elixir
-      uses: erlef/setup-beam@v1
-      with:
-        otp-version: ${{matrix.otp}}
-        elixir-version: ${{matrix.elixir}}
-        version-type: 'strict'
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+          version-type: "strict"
 
-    - run: mix local.hex --force
-    - run: mix local.rebar --force
+      - run: mix local.hex --force
+      - run: mix local.rebar --force
 
-    - name: Restore dependencies cache
-      uses: actions/cache@v3
-      with:
-        path: deps
-        key: v1-mix-${{ runner.os }}-${{ hashFiles('**/mix.lock') }}
-        restore-keys: v1-mix-${{ runner.os }}
+      - name: Restore dependencies cache
+        uses: actions/cache@v3
+        with:
+          path: deps
+          key: v1-mix-${{ runner.os }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: v1-mix-${{ runner.os }}
 
-    - name: Restore build cache
-      uses: actions/cache@v3
-      with:
-        path: _build
-        key: v1-build-${{ runner.os }}-${{ hashFiles('**/mix.lock') }}
-        restore-keys: v1-build-${{ runner.os }}
+      - name: Restore build cache
+        uses: actions/cache@v3
+        with:
+          path: _build
+          key: v1-build-${{ runner.os }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: v1-build-${{ runner.os }}
 
-    - name: Install dependencies
-      run: mix do deps.get, compile
+      - name: Install dependencies
+        run: mix do deps.get, compile
 
-    - name: Restore plts cache
-      uses: actions/cache@v3
-      with:
-        path: _plts
-        key: v1-plt-${{ runner.os }}-${{ hashFiles('**/mix.lock') }}
-        restore-keys: v1-plt-${{ runner.os }}
+      - name: Restore plts cache
+        uses: actions/cache@v3
+        with:
+          path: _plts
+          key: v1-plt-${{ runner.os }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: v1-plt-${{ runner.os }}
 
-    - name: Linter
-      run: mix lint
+      - name: Linter
+        run: mix lint
 
-    - name: Init DB
-      run: mix do ecto.create, ecto.migrate
-    
-    - name: Run tests
-      run: mix test
+      - name: Init DB
+        run: mix do ecto.create, ecto.migrate
+
+      - name: Run tests
+        run: mix test
