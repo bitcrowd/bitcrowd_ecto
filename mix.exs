@@ -15,7 +15,7 @@ defmodule BitcrowdEcto.MixProject do
       deps: deps(),
       dialyzer: dialyzer(),
       elixirc_paths: elixirc_paths(Mix.env()),
-      preferred_cli_env: [lint: :test],
+      cli: cli(),
 
       # hex.pm
       package: package(),
@@ -27,6 +27,10 @@ defmodule BitcrowdEcto.MixProject do
       source_url: "https://github.com/bitcrowd/bitcrowd_ecto",
       homepage_url: "https://github.com/bitcrowd/bitcrowd_ecto"
     ]
+  end
+
+  def cli do
+    [preferred_envs: [lint: :test]]
   end
 
   defp package do
@@ -76,8 +80,8 @@ defmodule BitcrowdEcto.MixProject do
 
   defp deps do
     [
-      {:ecto, "~> 3.6"},
-      {:ecto_sql, "~> 3.6"},
+      {:ecto, "~> 3.13"},
+      {:ecto_sql, "~> 3.13"},
       {:ex_money, "~> 5.12", optional: true},
       {:ex_money_sql, "~> 1.7", only: [:dev, :test]},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
@@ -85,7 +89,7 @@ defmodule BitcrowdEcto.MixProject do
       {:ex_doc, "> 0.0.0", only: [:dev], runtime: false},
       {:ex_machina, "~> 2.7", only: [:dev, :test]},
       {:junit_formatter, "~> 3.3", only: [:test]},
-      {:postgrex, "> 0.0.0", only: [:dev, :test]},
+      {:postgrex, "> 0.19.0", only: [:dev, :test]},
       {:tzdata, "> 0.0.0", only: [:dev, :test]},
       # NOTE: https://github.com/kipcole9/money/issues/142
       {:jason, "> 0.0.0", optional: true}
