@@ -180,7 +180,7 @@ defmodule BitcrowdEcto.RepoTest do
       assert TestRepo.fetch_by(TestSchema, [id: resource.id], prefix: prefix) == {:ok, resource}
     end
   end
-  
+
   describe "advisory_xact_lock/1" do
     test "acquires an advisory lock" do
       assert_lock_granted("locktype = 'advisory'", fn ->
