@@ -3,6 +3,7 @@
 defmodule BitcrowdEcto.RepoTest do
   use BitcrowdEcto.TestCase, async: true
   require Ecto.Query
+  alias BitcrowdEcto.TestRepoWithUntaggedNotFoundErrors
 
   defp insert_test_schema(_) do
     %{resource: insert(:test_schema)}
@@ -81,12 +82,26 @@ defmodule BitcrowdEcto.RepoTest do
     end
   end
 
-  describe "fetch/3" do
+  describe "fetch/3 when the resource exists" do
     setup [:insert_test_schema_with_prefix]
 
     test "returns the record using the prefix option", %{resource: resource, prefix: prefix} do
       assert TestRepo.fetch(TestSchema, resource.id) == {:error, {:not_found, TestSchema}}
       assert TestRepo.fetch(TestSchema, resource.id, prefix: prefix) == {:ok, resource}
+    end
+  end
+
+  describe "fetch/3 when the resource does not exist" do
+    test "error tagging can be disabled" do
+      assert TestRepo.fetch(TestSchema, Ecto.UUID.generate(), error_tag: false) ==
+               {:error, :not_found}
+    end
+
+    test "error tagging can be disabled globally" do
+      start_supervised!(TestRepoWithUntaggedNotFoundErrors)
+
+      assert TestRepoWithUntaggedNotFoundErrors.fetch(TestSchema, Ecto.UUID.generate()) ==
+               {:error, :not_found}
     end
   end
 
