@@ -90,7 +90,7 @@ defmodule BitcrowdEcto.RepoTest do
       assert TestRepo.fetch(TestSchema, resource.id, prefix: prefix) == {:ok, resource}
     end
   end
-  
+
   describe "fetch/3 when the resource does not exist" do
     test "error tagging can be disabled" do
       assert TestRepo.fetch(TestSchema, Ecto.UUID.generate(), error_tag: false) ==
