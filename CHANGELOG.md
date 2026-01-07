@@ -4,8 +4,18 @@
 
 ### Added
 
-* Ensure field/assoc/embed exists when listing errors in `flat_errors_on/3`. This prevents accidental test passes on typos in assertions like `refute_errors_on(cs, :sommtypo)`.
+## [1.1.0] - 2026-01-07
+
+### Added
+
 * Add ability to disable "tagged" not found errors in `Repo.fetch/2` and friends (local to calls or global option).
+* Added `BitcrowdEcto.FixedWidthInteger`
+* Allow `Repo.advisory_xact_lock/1 to handle atoms`
+
+### Changed
+
+* Ensure field/assoc/embed exists when listing errors in `flat_errors_on/3`. This prevents accidental test passes on typos in assertions like `refute_errors_on(cs, :sommtypo)`.
+
 
 ## [1.0.0] - 2023-12-21
 
