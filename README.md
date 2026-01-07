@@ -15,6 +15,7 @@ This library contains Bitcrowd's collection of tiny Ecto helpers.
 * `BitcrowdEcto.DateTime` contains date/time helpers.
 * `BitcrowdEcto.Assertions` has an assortment of useful ExUnit assertions related to Ecto schemas.
 * `BitcrowdEcto.Random` contains functions that generate random tokens.
+* `BitcrowdEcto.FixedWidthInteger` defines a ecto type for integers with a size that can be specified.
 
 <!-- MDOC -->
 
