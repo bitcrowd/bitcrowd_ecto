@@ -82,12 +82,27 @@ defmodule BitcrowdEcto.RepoTest do
     end
   end
 
-  describe "fetch/3" do
+  describe "fetch/3 when the resource exists" do
     setup [:insert_test_schema_with_prefix]
 
     test "returns the record using the prefix option", %{resource: resource, prefix: prefix} do
       assert TestRepo.fetch(TestSchema, resource.id) == {:error, {:not_found, TestSchema}}
       assert TestRepo.fetch(TestSchema, resource.id, prefix: prefix) == {:ok, resource}
+    end
+  end
+  
+  
+  describe "fetch/3 when the resource does not exist" do
+    test "error tagging can be disabled" do
+      assert TestRepo.fetch(TestSchema, Ecto.UUID.generate(), error_tag: false) ==
+               {:error, :not_found}
+    end
+
+    test "error tagging can be disabled globally" do
+      start_supervised!(TestRepoWithUntaggedNotFoundErrors)
+
+      assert TestRepoWithUntaggedNotFoundErrors.fetch(TestSchema, Ecto.UUID.generate()) ==
+               {:error, :not_found}
     end
   end
 
@@ -103,13 +118,16 @@ defmodule BitcrowdEcto.RepoTest do
       assert TestRepo.fetch_by(query, []) == {:ok, resource}
     end
 
-    # The actual lock is non-trivial to test, I tried.
     test "can lock for :update", %{resource: %{id: id} = resource} do
-      assert TestRepo.fetch_by(TestSchema, [id: id], lock: :update) == {:ok, resource}
+      assert_lock_granted("relation = 'test_schema_pkey'::regclass::oid", fn ->
+        assert TestRepo.fetch_by(TestSchema, [id: id], lock: :update) == {:ok, resource}
+      end)
     end
 
     test "can lock for :no_key_update", %{resource: %{id: id} = resource} do
-      assert TestRepo.fetch_by(TestSchema, [id: id], lock: :no_key_update) == {:ok, resource}
+      assert_lock_granted("relation = 'test_schema_pkey'::regclass::oid", fn ->
+        assert TestRepo.fetch_by(TestSchema, [id: id], lock: :no_key_update) == {:ok, resource}
+      end)
     end
 
     test "converts CastErrors for binary_id columns to not_found errors" do
@@ -162,18 +180,41 @@ defmodule BitcrowdEcto.RepoTest do
       assert TestRepo.fetch_by(TestSchema, [id: resource.id], prefix: prefix) == {:ok, resource}
     end
   end
-
-  describe "error tagging can be disabled" do
-    test "error tagging can be disabled on fetch/2, fetch/3, fetch_by/3 calls" do
-      assert TestRepo.fetch(TestSchema, Ecto.UUID.generate(), error_tag: false) ==
-               {:error, :not_found}
+  
+  describe "advisory_xact_lock/1" do
+    test "acquires an advisory lock" do
+      assert_lock_granted("locktype = 'advisory'", fn ->
+        TestRepo.advisory_xact_lock("foo")
+      end)
     end
 
-    test "error tagging can be disabled globally" do
-      start_supervised!(TestRepoWithUntaggedNotFoundErrors)
-
-      assert TestRepoWithUntaggedNotFoundErrors.fetch(TestSchema, Ecto.UUID.generate()) ==
-               {:error, :not_found}
+    test "accepts atoms" do
+      assert_lock_granted("locktype = 'advisory'", fn ->
+        TestRepo.advisory_xact_lock(:foo)
+      end)
     end
+  end
+
+  defp assert_lock_granted(where, fun) do
+    assert locks_granted(where) == 0
+    result = fun.()
+    assert locks_granted(where) == 1
+    result
+  end
+
+  defp locks_granted(where) do
+    %{rows: [[vxid]]} =
+      TestRepo.query!("""
+      SELECT virtualtransaction FROM pg_locks
+      WHERE transactionid::text = (txid_current() % (2^32)::bigint)::text;
+      """)
+
+    %{rows: [[count]]} =
+      TestRepo.query!("""
+      SELECT COUNT(*) FROM pg_locks
+      WHERE virtualtransaction = '#{vxid}' AND granted IS TRUE AND #{where};
+      """)
+
+    count
   end
 end
