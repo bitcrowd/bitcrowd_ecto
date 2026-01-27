@@ -33,6 +33,7 @@ defmodule BitcrowdEcto.TestSchema do
     field(:until_dt, :utc_datetime_usec)
     field(:from_number, :integer)
     field(:to_number, :integer)
+    field(:some_virtual, :string, virtual: true)
     field(:money, Money.Ecto.Composite.Type, default_currency: :EUR)
 
     belongs_to(:parent, __MODULE__)

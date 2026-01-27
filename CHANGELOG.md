@@ -4,6 +4,12 @@
 
 ### Added
 
+# [1.1.1] - 2026-01-27
+
+### Fixed 
+
+* `flat_errors_on` works again on virtual fields
+
 ## [1.1.0] - 2026-01-07
 
 ### Added
