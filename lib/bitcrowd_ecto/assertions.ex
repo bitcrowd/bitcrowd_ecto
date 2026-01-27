@@ -76,6 +76,7 @@ defmodule BitcrowdEcto.Assertions do
     fields_and_assocs_and_embeds =
       List.flatten([
         schema.__schema__(:fields),
+        schema.__schema__(:virtual_fields),
         schema.__schema__(:associations),
         schema.__schema__(:embeds)
       ])
