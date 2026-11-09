@@ -172,18 +172,19 @@ defmodule BitcrowdEcto.Migrator do
   @spec up(repo :: module()) :: :ok
   def up(repo) do
     handle_exceptions(repo, fn ->
-      {:ok, _, _} =
-        with_repo(repo, fn repo ->
-          Migrator.run(repo, :up, all: true)
-
-          for tenant <- repo.known_prefixes() do
-            ensure_schema!(repo, tenant)
-            Migrator.run(repo, tenant_migrations_path(repo), :up, all: true, prefix: tenant)
-          end
-        end)
+      {:ok, _, _} = with_repo(repo, &up_all_tenants/1)
     end)
 
     :ok
+  end
+
+  defp up_all_tenants(repo) do
+    Migrator.run(repo, :up, all: true)
+
+    for tenant <- repo.known_prefixes() do
+      ensure_schema!(repo, tenant)
+      Migrator.run(repo, tenant_migrations_path(repo), :up, all: true, prefix: tenant)
+    end
   end
 
   @doc false
@@ -236,17 +237,18 @@ defmodule BitcrowdEcto.Migrator do
   @spec down(repo :: module(), to :: non_neg_integer()) :: :ok
   def down(repo, to) when is_integer(to) do
     handle_exceptions(repo, fn ->
-      {:ok, _, _} =
-        with_repo(repo, fn repo ->
-          for tenant <- repo.known_prefixes() do
-            Migrator.run(repo, tenant_migrations_path(repo), :down, prefix: tenant, to: to)
-          end
-
-          Migrator.run(repo, :down, to: to)
-        end)
+      {:ok, _, _} = with_repo(repo, &down_all_tenants(&1, to))
     end)
 
     :ok
+  end
+
+  defp down_all_tenants(repo, to) do
+    for tenant <- repo.known_prefixes() do
+      Migrator.run(repo, tenant_migrations_path(repo), :down, prefix: tenant, to: to)
+    end
+
+    Migrator.run(repo, :down, to: to)
   end
 
   defp handle_exceptions(repo, callback) do
