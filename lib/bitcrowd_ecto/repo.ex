@@ -18,7 +18,12 @@ defmodule BitcrowdEcto.Repo do
   import Ecto.Query, only: [lock: 2, preload: 2, where: 3]
   alias Ecto.Adapters.SQL
 
-  @type lock_mode :: :no_key_update | :update
+  @type lock_mode ::
+          :key_share
+          | :share
+          | :no_key_update
+          | :update
+          | (Ecto.Queryable.t() -> Ecto.Queryable.t())
 
   @type fetch_option ::
           {:lock, lock_mode | false}
@@ -94,7 +99,7 @@ defmodule BitcrowdEcto.Repo do
 
   ## Options
 
-  * `lock`               any of `[:no_key_update, :update]` (defaults to `false`)
+  * `lock`               any of `[:key_share, :share, :no_key_update, :update]` or a function (defaults to `false`)
   * `preload`            allows to preload associations
   * `error_tag`          allows to specify a custom "tag" value (instead of the queryable)
                          or `false` to disabled tagged error tuples
@@ -238,11 +243,20 @@ defmodule BitcrowdEcto.Repo do
 
   defp maybe_apply_lock(queryable, opts) do
     case Keyword.get(opts, :lock, false) do
+      :key_share ->
+        lock(queryable, "FOR KEY SHARE")
+
+      :share ->
+        lock(queryable, "FOR SHARE")
+
       :no_key_update ->
         lock(queryable, "FOR NO KEY UPDATE")
 
       :update ->
         lock(queryable, "FOR UPDATE")
+
+      fun when is_function(fun) ->
+        fun.(queryable)
 
       disabled when disabled in [nil, false] ->
         queryable

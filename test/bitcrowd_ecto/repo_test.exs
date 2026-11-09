@@ -2,7 +2,7 @@
 
 defmodule BitcrowdEcto.RepoTest do
   use BitcrowdEcto.TestCase, async: true
-  require Ecto.Query
+  import Ecto.Query
   alias BitcrowdEcto.TestRepoWithUntaggedNotFoundErrors
 
   defp insert_test_schema(_) do
@@ -129,6 +129,25 @@ defmodule BitcrowdEcto.RepoTest do
       end)
     end
 
+    test "can lock for :share", %{resource: %{id: id} = resource} do
+      assert_lock_granted("relation = 'test_schema_pkey'::regclass::oid", fn ->
+        assert TestRepo.fetch_by(TestSchema, [id: id], lock: :share) == {:ok, resource}
+      end)
+    end
+
+    test "can lock for :key_share", %{resource: %{id: id} = resource} do
+      assert_lock_granted("relation = 'test_schema_pkey'::regclass::oid", fn ->
+        assert TestRepo.fetch_by(TestSchema, [id: id], lock: :key_share) == {:ok, resource}
+      end)
+    end
+
+    test "can lock with a function", %{resource: %{id: id} = resource} do
+      assert_lock_granted("relation = 'test_schema_pkey'::regclass::oid", fn ->
+        assert TestRepo.fetch_by(TestSchema, [id: id], lock: &lock(&1, "FOR SHARE")) ==
+                 {:ok, resource}
+      end)
+    end
+
     test "converts CastErrors for binary_id columns to not_found errors" do
       assert TestRepo.fetch_by(TestSchema, some_uuid: "doesnotcast") ==
                {:error, {:not_found, TestSchema}}
@@ -147,7 +166,7 @@ defmodule BitcrowdEcto.RepoTest do
     end
 
     test "returns the given error tag instead of the queryable" do
-      query = Ecto.Query.from(x in TestSchema, where: x.id == ^Ecto.UUID.generate())
+      query = from(x in TestSchema, where: x.id == ^Ecto.UUID.generate())
       assert TestRepo.fetch_by(query, []) == {:error, {:not_found, query}}
       assert TestRepo.fetch_by(query, [], error_tag: :foo) == {:error, {:not_found, :foo}}
     end

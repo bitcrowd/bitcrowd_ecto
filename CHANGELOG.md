@@ -4,7 +4,9 @@
 
 ### Added
 
-# [1.1.1] - 2026-01-27
+* Added lock modes `:share` and `:key_share` to `Repo.fetch_by/3` as well as the ability to pass a function.
+
+## [1.1.1] - 2026-01-27
 
 ### Fixed 
 
@@ -21,7 +23,6 @@
 ### Changed
 
 * Ensure field/assoc/embed exists when listing errors in `flat_errors_on/3`. This prevents accidental test passes on typos in assertions like `refute_errors_on(cs, :sommtypo)`.
-
 
 ## [1.0.0] - 2023-12-21
 
