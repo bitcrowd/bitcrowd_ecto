@@ -82,7 +82,7 @@ defmodule BitcrowdEcto.MixProject do
     [
       {:ecto, "~> 3.13"},
       {:ecto_sql, "~> 3.13"},
-      {:ex_money, "~> 5.12", optional: true},
+      {:ex_money, "~> 5.12 or ~> 6.0", optional: true},
       {:ex_money_sql, "~> 1.7", only: [:dev, :test]},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
