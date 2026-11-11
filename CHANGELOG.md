@@ -1,10 +1,14 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
-## Unreleased
+## [1.2.0] - 2026-11-11
 
 ### Added
 
 * Added lock modes `:share` and `:key_share` to `Repo.fetch_by/3` as well as the ability to pass a function.
+
+### Changed
+
+* Allow ex_money >6.0 in the deps.
 
 ## [1.1.1] - 2026-01-27
 
